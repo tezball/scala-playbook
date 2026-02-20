@@ -6,25 +6,58 @@
     <div class="concept-banner">
         <h3>Advanced Concepts: Event Sourcing, foldLeft, scanLeft, Immutability, groupMapReduce</h3>
         <p>Entries are append-only (immutable history). The current balance is derived by folding over the entire transaction history. Running balances use <code>scanLeft</code>. No entry is ever edited or deleted.</p>
-        <pre><code>// Event sourcing: current state derived from folding over history
+
+        <details class="code-callout">
+            <summary>Transaction Types (Sealed Trait) <span class="callout-source">LedgerEntry.scala</span></summary>
+            <pre><code>// Sealed trait for transaction types
+sealed trait TransactionType(val label: String)
+case object Credit extends TransactionType("Credit")
+case object Debit extends TransactionType("Debit")
+case object Refund extends TransactionType("Refund")
+case object Fee extends TransactionType("Fee")
+
+object TransactionType:
+  def fromString(s: String): TransactionType = s match
+    case "Credit" =&gt; Credit
+    case "Debit"  =&gt; Debit
+    case "Refund" =&gt; Refund
+    case "Fee"    =&gt; Fee
+    case _        =&gt; Credit</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>foldLeft + scanLeft &mdash; Balance Computation <span class="callout-source">LedgerCalculator.scala</span></summary>
+            <pre><code>// Event sourcing: current state derived from folding over history
 def computeBalance(entries: Seq[LedgerEntry]): Double =
   entries.foldLeft(0.0) { (balance, entry) =&gt;
-    entry.txType match
+    TransactionType.fromString(entry.txType) match
       case Credit | Refund =&gt; balance + entry.amount
       case Debit | Fee     =&gt; balance - entry.amount
   }
 
 // Running balance at each point (scanLeft)
 def runningBalances(entries: Seq[LedgerEntry]): Seq[(LedgerEntry, Double)] =
-  entries.scanLeft((null, 0.0)) { case ((_, bal), entry) =&gt;
-    entry.txType match
-      case Credit | Refund =&gt; (entry, bal + entry.amount)
-      case Debit | Fee     =&gt; (entry, bal - entry.amount)
-  }.tail
+  entries.scanLeft((null.asInstanceOf[LedgerEntry], 0.0)) { case ((_, balance), entry) =&gt;
+    TransactionType.fromString(entry.txType) match
+      case Credit | Refund =&gt; (entry, balance + entry.amount)
+      case Debit | Fee     =&gt; (entry, balance - entry.amount)
+  }.tail</code></pre>
+        </details>
 
-// Grouping transactions
+        <details class="code-callout">
+            <summary>groupMapReduce &mdash; Summary by Type <span class="callout-source">LedgerCalculator.scala</span></summary>
+            <pre><code>// Grouping transactions by type
 def summaryByType(entries: Seq[LedgerEntry]): Map[String, Double] =
-  entries.groupMapReduce(_.txType)(_.amount)(_ + _)</code></pre>
+  entries.groupMapReduce(_.txType)(_.amount)(_ + _)
+
+// Total credits (filter + map + sum)
+def totalCredits(entries: Seq[LedgerEntry]): Double =
+  entries.filter(e =&gt; e.txType == "Credit" || e.txType == "Refund").map(_.amount).sum
+
+// Total debits
+def totalDebits(entries: Seq[LedgerEntry]): Double =
+  entries.filter(e =&gt; e.txType == "Debit" || e.txType == "Fee").map(_.amount).sum</code></pre>
+        </details>
     </div>
 
     @request.flash.get("success").map { message =>

@@ -6,18 +6,61 @@
     <div class="concept-banner">
         <h3>Concepts: Error Handling &mdash; Option, Either, Try, for-comprehensions</h3>
         <p>Coupon validation follows a pipeline: <strong>Try</strong> (parse input) &rarr; <strong>Option</strong> (DB lookup) &rarr; <strong>Either</strong> (business rule validation). Each step can fail differently, and Scala's types make the failure modes explicit.</p>
-        <pre><code>// Step 1: Try - parse the input (could throw)
+
+        <details class="code-callout">
+            <summary>Try, Option, Either &mdash; Individual Steps <span class="callout-source">CouponValidator.scala</span></summary>
+            <pre><code>// Step 1: Try - parse the input (could throw)
 def parseCode(raw: String): Try[String] =
-  Try { require(raw.nonEmpty, "Code cannot be empty"); raw.trim.toUpperCase }
+  Try {
+    require(raw.nonEmpty, "Code cannot be empty")
+    require(raw.trim.matches("^[A-Za-z0-9_]+$"), "Code must be alphanumeric")
+    raw.trim.toUpperCase
+  }
 
 // Step 2: Option - look up in database (may not exist)
-def findCoupon(code: String): Future[Option[Coupon]]
+def findByCode(code: String): Future[Option[Coupon]]
 
 // Step 3: Either - validate business rules
-def validateCoupon(coupon: Coupon): Either[String, Coupon] =
-  if coupon.isExpired then Left("Coupon expired")
-  else if coupon.usesRemaining &lt;= 0 then Left("No uses remaining")
+def validateCoupon(coupon: Coupon, orderTotal: Double): Either[String, Coupon] =
+  if coupon.expiresAt.isBefore(LocalDate.now()) then Left(s"Coupon expired on ${coupon.expiresAt}")
+  else if coupon.usesRemaining &lt;= 0 then Left("Coupon has no uses remaining")
+  else if coupon.minimumOrder &gt; orderTotal then Left(f"Minimum order not met")
   else Right(coupon)</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Full Validation Pipeline with Step Tracking <span class="callout-source">CouponValidator.scala</span></summary>
+            <pre><code>def validate(rawInput: String, couponOpt: Option[Coupon], orderTotal: Double): ValidationResult =
+  val steps = scala.collection.mutable.ListBuffer[ValidationStep]()
+
+  // Step 1: Try - parse
+  val parseResult = parseCode(rawInput)
+  parseResult match
+    case scala.util.Success(code) =&gt;
+      steps += ValidationStep("Parse Input", "Try", passed = true, s"Success: '$code'")
+    case scala.util.Failure(ex) =&gt;
+      steps += ValidationStep("Parse Input", "Try", passed = false, s"Failure: ${ex.getMessage}")
+      return ValidationResult(steps.toSeq, None)
+
+  // Step 2: Option - lookup
+  couponOpt match
+    case Some(coupon) =&gt;
+      steps += ValidationStep("Lookup Coupon", "Option", passed = true, s"Some(${coupon.code})")
+    case None =&gt;
+      steps += ValidationStep("Lookup Coupon", "Option", passed = false, "None - Coupon not found")
+      return ValidationResult(steps.toSeq, None)
+
+  // Step 3: Either - validate business rules
+  val coupon = couponOpt.get
+  validateCoupon(coupon, orderTotal) match
+    case Right(valid) =&gt;
+      steps += ValidationStep("Validate Rules", "Either", passed = true, s"Right(${valid.code})")
+      val discount = orderTotal * (valid.discountPercent / 100)
+      ValidationResult(steps.toSeq, Some(discount))
+    case Left(error) =&gt;
+      steps += ValidationStep("Validate Rules", "Either", passed = false, s"Left($error)")
+      ValidationResult(steps.toSeq, None)</code></pre>
+        </details>
     </div>
 
     <h2>Known Coupon Codes</h2>

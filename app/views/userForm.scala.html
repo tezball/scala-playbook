@@ -6,18 +6,35 @@
     <div class="concept-banner">
         <h3>Concepts: Slick Table Mappings, Case Classes, Repository Pattern, Futures</h3>
         <p>User data is persisted via Slick ORM. A <code>case class User</code> maps directly to a database table through a <code>Table[User]</code> definition. All queries return <code>Future</code> and follow the repository pattern.</p>
-        <pre><code>case class User(id: Long, name: String, email: String, phone: String)
+
+        <details class="code-callout">
+            <summary>Case Class + Slick Table Mapping <span class="callout-source">User.scala</span></summary>
+            <pre><code>case class User(id: Long, name: String, email: String, phone: String)
 
 class UsersTable(tag: Tag) extends Table[User](tag, "users"):
   def id    = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def name  = column[String]("name")
   def email = column[String]("email")
   def phone = column[String]("phone")
-  def * = (id, name, email, phone).mapTo[User]
+  def *     = (id, name, email, phone).mapTo[User]</code></pre>
+        </details>
 
-// Repository pattern - all DB ops return Future
-def list(): Future[Seq[User]] = db.run(users.result)
-def create(name: String, ...): Future[User] = db.run(insertQuery += (...))</code></pre>
+        <details class="code-callout">
+            <summary>Repository Pattern with Futures <span class="callout-source">UserRepository.scala</span></summary>
+            <pre><code>class UserRepository @@Inject()(dbConfigProvider: DatabaseConfigProvider)(using ec: ExecutionContext):
+
+  private val users = TableQuery[UsersTable]
+
+  def list(): Future[Seq[User]] = db.run(users.result)
+
+  def count(): Future[Int] = db.run(users.length.result)
+
+  def create(name: String, email: String, phone: String): Future[User] =
+    val insertQuery = (users.map(u =&gt; (u.name, u.email, u.phone))
+      returning users.map(_.id)
+      into ((fields, id) =&gt; User(id, fields._1, fields._2, fields._3)))
+    db.run(insertQuery += (name, email, phone))</code></pre>
+        </details>
     </div>
 
     @request.flash.get("success").map { message =>

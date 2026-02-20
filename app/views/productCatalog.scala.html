@@ -6,23 +6,46 @@
     <div class="concept-banner">
         <h3>Concepts: Pattern Matching, Sealed Traits, Enums, Case Classes</h3>
         <p>Product pricing is computed using pattern matching on sealed trait discount types and enum categories. The compiler enforces exhaustive matching &mdash; every case must be handled.</p>
-        <pre><code>sealed trait Discount
+
+        <details class="code-callout">
+            <summary>Enum + Sealed Trait ADT <span class="callout-source">PricingEngine.scala</span></summary>
+            <pre><code>// Enum for product categories
+enum Category:
+  case Electronics, Books, Clothing, Food, Sports
+
+// Sealed trait for discount types - each is a different "shape"
+sealed trait Discount
 case class Percentage(percent: Double) extends Discount
 case class FixedAmount(amount: Double) extends Discount
 case class BuyOneGetOne(freeItemName: String) extends Discount
-case object NoDiscount extends Discount
+case object NoDiscount extends Discount</code></pre>
+        </details>
 
+        <details class="code-callout">
+            <summary>Pattern Matching &mdash; Discount + Tax Rules <span class="callout-source">PricingEngine.scala</span></summary>
+            <pre><code>// Pattern matching to calculate final price
 def applyDiscount(price: Double, discount: Discount): Double = discount match
   case Percentage(pct)  =&gt; price * (1 - pct / 100)
   case FixedAmount(amt) =&gt; (price - amt).max(0)
-  case BuyOneGetOne(_)  =&gt; price
+  case BuyOneGetOne(_)  =&gt; price  // price unchanged, but you get a free item
   case NoDiscount       =&gt; price
 
+// Pattern matching on category for tax rates
 def taxRate(category: Category): Double = category match
   case Category.Food                          =&gt; 0.0
   case Category.Books                         =&gt; 0.05
   case Category.Clothing                      =&gt; 0.08
   case Category.Electronics | Category.Sports =&gt; 0.10</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Final Price Computation <span class="callout-source">PricingEngine.scala</span></summary>
+            <pre><code>def computeFinalPrice(basePrice: Double, category: Category, discount: Discount): Double =
+  val afterDiscount = applyDiscount(basePrice, discount)
+  val tax = taxRate(category)
+  val finalPrice = afterDiscount * (1 + tax)
+  BigDecimal(finalPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble</code></pre>
+        </details>
     </div>
 
     @request.flash.get("success").map { message =>

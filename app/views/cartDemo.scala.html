@@ -6,21 +6,41 @@
     <div class="concept-banner">
         <h3>Concepts: Collection Operations &mdash; map, filter, foldLeft, groupBy, sortBy, collect</h3>
         <p>All cart calculations are performed using Scala collection methods. Each result below shows which method produced it.</p>
-        <pre><code>// foldLeft - grand total
-items.foldLeft(0.0)((total, item) =&gt; total + item.unitPrice * item.quantity)
 
-// groupBy + map - subtotals by category
-items.groupBy(_.category).map((cat, items) =&gt;
-  cat -&gt; items.map(i =&gt; i.unitPrice * i.quantity).sum)
+        <details class="code-callout">
+            <summary>map, filter, foldLeft &mdash; Core Operations <span class="callout-source">CartCalculator.scala</span></summary>
+            <pre><code>// map - compute line totals
+def lineTotals(items: Seq[CartItem]): Seq[(CartItem, Double)] =
+  items.map(i =&gt; (i, i.unitPrice * i.quantity))
 
-// filter - expensive items
-items.filter(_.unitPrice &gt; 20.0)
+// filter - find expensive items (unit price &gt; 20)
+def expensiveItems(items: Seq[CartItem]): Seq[CartItem] =
+  items.filter(_.unitPrice &gt; 20.0)
+
+// foldLeft - compute grand total
+def grandTotal(items: Seq[CartItem]): Double =
+  items.foldLeft(0.0)((total, item) =&gt; total + item.unitPrice * item.quantity)</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>groupBy, sortBy, collect, distinctBy &mdash; Grouping + Sorting <span class="callout-source">CartCalculator.scala</span></summary>
+            <pre><code>// groupBy + map - subtotals by category
+def subtotalsByCategory(items: Seq[CartItem]): Map[String, Double] =
+  items.groupBy(_.category).map((cat, catItems) =&gt;
+    cat -&gt; catItems.map(i =&gt; i.unitPrice * i.quantity).sum)
 
 // sortBy - sort by price descending
-items.sortBy(-_.unitPrice)
+def sortedByPrice(items: Seq[CartItem]): Seq[CartItem] =
+  items.sortBy(-_.unitPrice)
 
-// collect - free shipping eligible (line total &gt; $50)
-items.collect { case i if i.unitPrice * i.quantity &gt; 50 =&gt; i.name }</code></pre>
+// collect - only items that qualify for free shipping (line total &gt; 50)
+def freeShippingEligible(items: Seq[CartItem]): Seq[String] =
+  items.collect { case i if i.unitPrice * i.quantity &gt; 50 =&gt; i.name }
+
+// distinctBy - unique categories
+def uniqueCategories(items: Seq[CartItem]): Seq[String] =
+  items.distinctBy(_.category).map(_.category)</code></pre>
+        </details>
     </div>
 
     @request.flash.get("success").map { message =>

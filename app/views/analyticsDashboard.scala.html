@@ -6,22 +6,42 @@
     <div class="concept-banner">
         <h3>Concepts: Concurrency &mdash; Future, parallel composition, for-comprehension, recover</h3>
         <p>All dashboard queries run in parallel using <code>Future</code>. Starting each future before the for-comprehension means they execute concurrently, not sequentially.</p>
-        <pre><code>// Start all futures before combining (runs in parallel)
-val userCountF: Future[Int] = userRepository.count()
-val orderCountF: Future[Int] = orderRepository.count()
-val topItemsF: Future[Seq[(String, Int)]] = orderRepository.topItems(5)
-val recentOrdersF: Future[Seq[Order]] = orderRepository.recent(10)
 
-// Compose with for-comprehension
-val dashboard = for
-  userCount    &lt;- userCountF
-  orderCount   &lt;- orderCountF
-  topItems     &lt;- topItemsF
-  recentOrders &lt;- recentOrdersF
-yield DashboardData(userCount, orderCount, topItems, recentOrders)
+        <details class="code-callout">
+            <summary>Parallel Futures + for-comprehension + recover <span class="callout-source">AnalyticsService.scala</span></summary>
+            <pre><code>def dashboard(): Future[DashboardData] =
+  // Start all futures before combining (runs in parallel)
+  val userCountF: Future[Int] = userRepository.count()
+  val orderCountF: Future[Int] = orderRepository.count()
+  val topItemsF: Future[Seq[(String, Int)]] = orderRepository.topItems(5)
+  val recentOrdersF: Future[Seq[Order]] = orderRepository.recent(10)
 
-// recover - graceful fallback
-dashboard.recover { case _: Exception =&gt; DashboardData.empty }</code></pre>
+  // Compose with for-comprehension
+  val dashboard = for
+    userCount    &lt;- userCountF
+    orderCount   &lt;- orderCountF
+    topItems     &lt;- topItemsF
+    recentOrders &lt;- recentOrdersF
+  yield DashboardData(userCount, orderCount, topItems, recentOrders)
+
+  // recover - graceful fallback
+  dashboard.recover {
+    case _: Exception =&gt; DashboardData.empty
+  }</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Repository Methods (called in parallel) <span class="callout-source">OrderRepository.scala</span></summary>
+            <pre><code>// Added to existing OrderRepository for Analytics
+def count(): Future[Int] = db.run(orders.length.result)
+
+def topItems(n: Int): Future[Seq[(String, Int)]] = db.run(
+  orders.groupBy(_.itemName)
+    .map((item, group) =&gt; (item, group.map(_.quantity).sum.getOrElse(0)))
+    .sortBy(_._2.desc).take(n).result)
+
+def recent(n: Int): Future[Seq[Order]] = db.run(orders.sortBy(_.id.desc).take(n).result)</code></pre>
+        </details>
     </div>
 
     <div class="cards">

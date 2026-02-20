@@ -6,30 +6,52 @@
     <div class="concept-banner">
         <h3>Advanced Concepts: Traits, Mixins, Type Classes (Ordering, Show), Givens</h3>
         <p>Reviews mix in <code>Timestamped</code>, <code>Rateable</code>, and <code>Authorable</code> traits. Sorting uses <code>given Ordering[Review]</code> instances, and rendering uses a custom <code>Show</code> type class.</p>
-        <pre><code>// Composable traits
+
+        <details class="code-callout">
+            <summary>Composable Traits + Mixin <span class="callout-source">Reviewable.scala, Review.scala</span></summary>
+            <pre><code>// Composable traits
 trait Timestamped:
   def createdAt: Instant
+
 trait Rateable:
   def rating: Int
   def stars: String = "\u2605" * rating + "\u2606" * (5 - rating)
+
 trait Authorable:
   def author: String
 
 // Case class mixing in multiple traits
-case class Review(...) extends Timestamped, Rateable, Authorable
+case class Review(id: Long, productName: String, author: String,
+                  rating: Int, comment: String, createdAt: Instant)
+  extends Timestamped, Rateable, Authorable</code></pre>
+        </details>
 
-// Custom Ordering instances (given = type class instances)
-given byRating: Ordering[Review] = Ordering.by(-_.rating)
-given byDate: Ordering[Review] = Ordering.by(_.createdAt)
-
-// Custom type class: Show
+        <details class="code-callout">
+            <summary>Type Class: Show[A] + given Instance <span class="callout-source">Reviewable.scala, Review.scala</span></summary>
+            <pre><code>// Custom type class: Show
 trait Show[A]:
   def show(a: A): String
-given Show[Review] with
-  def show(r: Review) = s"${r.stars} by ${r.author}: ${r.comment}"
 
+object Show:
+  def apply[A](using s: Show[A]): Show[A] = s
+
+// Using the type class with context bounds
 def display[A](items: Seq[A])(using s: Show[A]): Seq[String] =
-  items.map(s.show)</code></pre>
+  items.map(s.show)
+
+// Given instance for Review
+given Show[Review] with
+  def show(r: Review) = s"${r.stars} by ${r.author}: ${r.comment}"</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>given Ordering Instances <span class="callout-source">Reviewable.scala</span></summary>
+            <pre><code>// Custom Ordering instances (type class in action)
+object ReviewOrderings:
+  given byRating: Ordering[Review] = Ordering.by(r =&gt; (-r.rating, r.author))
+  given byDate: Ordering[Review] = Ordering.by[Review, Instant](_.createdAt).reverse
+  given byAuthor: Ordering[Review] = Ordering.by(_.author)</code></pre>
+        </details>
     </div>
 
     @request.flash.get("success").map { message =>

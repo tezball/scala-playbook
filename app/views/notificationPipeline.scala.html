@@ -6,23 +6,53 @@
     <div class="concept-banner">
         <h3>Concepts: Function Composition &mdash; andThen, compose, pipe, tap, PartialFunction, Currying</h3>
         <p>A notification passes through a pipeline of composed functions. Each stage transforms the notification, and routing uses <code>PartialFunction.orElse</code> to dispatch by channel.</p>
-        <pre><code>// Individual pipeline stages as functions
+
+        <details class="code-callout">
+            <summary>Pipeline Stages (Notification =&gt; Notification) <span class="callout-source">NotificationPipeline.scala</span></summary>
+            <pre><code>// Individual pipeline stages as functions
 val sanitize: Notification =&gt; Notification = n =&gt;
   n.copy(message = n.message.replaceAll("&lt;[^&gt;]*&gt;", "").trim)
-val addTimestamp: Notification =&gt; Notification = ...
-val truncate: Notification =&gt; Notification = ...
+
+val addTimestamp: Notification =&gt; Notification = n =&gt;
+  n.copy(metadata = n.metadata + ("sentAt" -&gt; Instant.now.toString))
+
+val truncate: Notification =&gt; Notification = n =&gt;
+  if n.message.length &gt; 100 then n.copy(message = n.message.take(97) + "...") else n
 
 // andThen - compose left to right
-val pipeline = sanitize.andThen(addTimestamp).andThen(truncate)
+val pipeline: Notification =&gt; Notification = sanitize
+  .andThen(addTimestamp)
+  .andThen(truncate)</code></pre>
+        </details>
 
-// PartialFunction for routing by channel
-val emailHandler: PartialFunction[Notification, String] =
-  case n if n.channel == "email" =&gt; s"Sending email to ${n.recipient}"
-val route = emailHandler.orElse(smsHandler).orElse(pushHandler)
+        <details class="code-callout">
+            <summary>PartialFunction &mdash; Channel Routing <span class="callout-source">NotificationPipeline.scala</span></summary>
+            <pre><code>val emailHandler: PartialFunction[Notification, String] =
+  case n if n.channel == "email" =&gt; s"Sending email to ${n.recipient}: ${n.message}"
 
-// Curried function for reusable formatters
-def formatForChannel(maxLen: Int)(prefix: String)(n: Notification): Notification = ...
-val formatForSms = formatForChannel(160)("[SMS]")</code></pre>
+val smsHandler: PartialFunction[Notification, String] =
+  case n if n.channel == "sms" =&gt; s"Sending SMS to ${n.recipient}: ${n.message.take(160)}"
+
+val pushHandler: PartialFunction[Notification, String] =
+  case n if n.channel == "push" =&gt; s"Sending push to ${n.recipient}: ${n.message.take(80)}"
+
+val route: PartialFunction[Notification, String] =
+  emailHandler
+    .orElse(smsHandler)
+    .orElse(pushHandler)
+    .orElse { case n =&gt; s"Unknown channel '${n.channel}' for ${n.recipient}" }</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Curried Functions &mdash; Reusable Formatters <span class="callout-source">NotificationPipeline.scala</span></summary>
+            <pre><code>// Curried function for reusable formatters
+def formatForChannel(maxLength: Int)(prefix: String)(n: Notification): Notification =
+  n.copy(message = s"$prefix ${n.message}".take(maxLength))
+
+val formatForSms: Notification =&gt; Notification = formatForChannel(160)("[SMS]")
+val formatForEmail: Notification =&gt; Notification = formatForChannel(5000)("[Email]")
+val formatForPush: Notification =&gt; Notification = formatForChannel(80)("[Push]")</code></pre>
+        </details>
     </div>
 
     <h2>Send a Notification</h2>
@@ -61,7 +91,7 @@ val formatForSms = formatForChannel(160)("[SMS]")</code></pre>
         var notifications = [
             { ch: 'email', to: 'alice.johnson@@example.com', msg: 'Your order <b>#1042</b> has shipped! <a href="#">Track it here</a>. Expected delivery: 3-5 business days.' },
             { ch: 'sms', to: '+1-555-0101', msg: 'Hi Alice, your prescription is ready for pickup at Walgreens on Main St. Reply STOP to unsubscribe.' },
-            { ch: 'push', to: 'bob.martinez', msg: 'Flash sale! <strong>50% off</strong> all electronics for the next 2 hours. <script>alert("deal")</script> Shop now!' },
+            { ch: 'push', to: 'bob.martinez', msg: 'Flash sale! <strong>50% off</strong> all electronics for the next 2 hours. <iframe onload="alert(1)"></iframe> Shop now!' },
             { ch: 'email', to: 'carol.chen@@techcorp.io', msg: 'Your return for Order #987 has been processed. A refund of $49.99 will appear on your statement within 5-7 business days. Thank you for shopping with us and we hope to see you again soon!' },
             { ch: 'sms', to: '+44-20-7946-0958', msg: 'Delivery update: Your package is <em>out for delivery</em> and will arrive by 5pm today.' },
             { ch: 'push', to: 'david.kim', msg: 'Price drop alert! The <b>Wireless Headphones</b> in your wishlist just dropped from $349 to $279.' }

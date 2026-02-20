@@ -42,6 +42,15 @@
         .concept-banner h3 { margin: 0 0 8px 0; color: #1565C0; }
         .concept-banner pre { background: #263238; color: #EEFFFF; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; margin: 8px 0 0 0; }
         .concept-banner code { font-family: 'Courier New', monospace; }
+        .code-callout { border: 1px solid #c7d2fe; border-left: 4px solid #7c3aed; border-radius: 0 6px 6px 0; margin: 10px 0 0 0; background: #f5f3ff; overflow: hidden; }
+        .code-callout summary { cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 0.9em; color: #5b21b6; list-style: none; display: flex; align-items: center; gap: 8px; }
+        .code-callout summary::-webkit-details-marker { display: none; }
+        .code-callout summary::before { content: '\25B6'; font-size: 0.6em; transition: transform 0.2s ease; }
+        .code-callout[open] summary::before { transform: rotate(90deg); }
+        .code-callout summary:hover { background: #ede9fe; }
+        .code-callout .callout-source { font-weight: normal; color: #8b5cf6; font-size: 0.85em; }
+        .code-callout pre { margin: 0; padding: 14px; background: #263238; color: #EEFFFF; font-size: 0.85em; overflow-x: auto; border-top: 1px solid #c7d2fe; }
+        .code-callout code { font-family: 'Courier New', monospace; }
         .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
         .card h3 { margin-top: 0; }
         .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }

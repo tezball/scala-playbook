@@ -6,21 +6,43 @@
     <div class="concept-banner">
         <h3>Advanced Concepts: ADTs (Algebraic Data Types), State Machines, Exhaustive Matching, copy</h3>
         <p>Each order has a typed state from a sealed trait ADT. The compiler enforces that every state is handled in pattern matches. Transitions are validated &mdash; you can only move to legal next states.</p>
-        <pre><code>// ADT for order states - each state carries different data
+
+        <details class="code-callout">
+            <summary>Sealed Trait ADT &mdash; Order States <span class="callout-source">WorkflowEngine.scala</span></summary>
+            <pre><code>// ADT for order states - each state can carry different data
 sealed trait OrderStatus
 case object Pending extends OrderStatus
 case class Approved(approvedBy: String, approvedAt: Instant) extends OrderStatus
 case class Shipped(trackingNumber: String, carrier: String) extends OrderStatus
 case class Delivered(deliveredAt: Instant, signature: String) extends OrderStatus
-case class Cancelled(reason: String, cancelledAt: Instant) extends OrderStatus
+case class Cancelled(reason: String, cancelledAt: Instant) extends OrderStatus</code></pre>
+        </details>
 
-// State machine - exhaustive matching
+        <details class="code-callout">
+            <summary>State Machine &mdash; Exhaustive Matching <span class="callout-source">WorkflowEngine.scala</span></summary>
+            <pre><code>// Exhaustive matching enforces handling every state
 def nextActions(status: OrderStatus): List[String] = status match
-  case Pending        =&gt; List("approve", "cancel")
-  case Approved(_, _) =&gt; List("ship", "cancel")
-  case Shipped(_, _)  =&gt; List("deliver", "cancel")
-  case Delivered(_, _) =&gt; List()  // terminal
-  case Cancelled(_, _) =&gt; List()  // terminal</code></pre>
+  case Pending         =&gt; List("approve", "cancel")
+  case Approved(_, _)  =&gt; List("ship", "cancel")
+  case Shipped(_, _)   =&gt; List("deliver", "cancel")
+  case Delivered(_, _) =&gt; List()  // terminal state
+  case Cancelled(_, _) =&gt; List()  // terminal state</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Transition Validation &mdash; Tuple Pattern Matching <span class="callout-source">WorkflowEngine.scala</span></summary>
+            <pre><code>def transition(current: OrderStatus, action: String,
+               data: Map[String, String]): Either[String, OrderStatus] =
+  (current, action) match
+    case (Pending, "approve")       =&gt; Right(Approved(data.getOrElse("by", "system"), Instant.now))
+    case (Approved(_, _), "ship")   =&gt; Right(Shipped(data.getOrElse("tracking", "N/A"),
+                                                      data.getOrElse("carrier", "Standard")))
+    case (Shipped(_, _), "deliver") =&gt; Right(Delivered(Instant.now,
+                                                       data.getOrElse("signature", "unsigned")))
+    case (_, "cancel")              =&gt; Right(Cancelled(data.getOrElse("reason", "No reason"),
+                                                       Instant.now))
+    case (state, act)               =&gt; Left(s"Cannot '$act' from state ${statusName(state)}")</code></pre>
+        </details>
     </div>
 
     <div style="background:#f5f5f5; padding:12px; border-radius:4px; margin-bottom:20px; text-align:center">

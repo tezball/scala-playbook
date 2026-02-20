@@ -4,8 +4,20 @@
     <h1>Place Order</h1>
 
     <div class="concept-banner">
-        <h3>Concepts: Play Forms, Slick ORM, Kafka Producer/Consumer</h3>
-        <p>This page demonstrates order placement with database persistence and Kafka event publishing for checkout emails.</p>
+        <h3>Advanced Concepts: Kafka Producer/Consumer, Event Serialization, JSON Formats, Async Messaging</h3>
+        <p>When an order is placed, an <code>OrderPlacedEvent</code> is published to Kafka. A background consumer thread reads events and displays them below. This demonstrates event-driven architecture with typed JSON serialization using Play's <code>Format</code> type class.</p>
+        <pre><code>// Event case class with JSON Format (type class instance via given)
+case class OrderPlacedEvent(eventType: String, timestamp: String, order: OrderPayload)
+object OrderPlacedEvent:
+  given Format[OrderPlacedEvent] = Json.format[OrderPlacedEvent]
+
+// Publish to Kafka after DB write
+kafkaProducer.publish(topic, order.id.toString, Json.toJson(event).toString())
+
+// Consumer polls in a background thread
+val records = consumer.poll(Duration.ofMillis(500))
+for record &lt;- records.asScala do
+  Json.parse(record.value()).validate[OrderPlacedEvent]</code></pre>
     </div>
 
     @request.flash.get("success").map { message =>

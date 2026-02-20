@@ -1,13 +1,9 @@
 # Home
 GET     /                       controllers.HomeController.index()
 
-# Existing Modules
+# Core Concepts
 GET     /users                  users.UserController.showForm()
 POST    /users                  users.UserController.saveUser()
-GET     /orders                 orders.OrderController.showForm()
-POST    /orders                 orders.OrderController.placeOrder()
-
-# Core Concepts
 GET     /products               products.ProductController.showForm()
 POST    /products               products.ProductController.addProduct()
 GET     /cart                   cart.CartController.showCart()
@@ -19,6 +15,8 @@ POST    /notifications          notifications.NotificationController.sendNotific
 GET     /analytics              analytics.AnalyticsController.dashboard()
 
 # Advanced Concepts
+GET     /orders                 orders.OrderController.showForm()
+POST    /orders                 orders.OrderController.placeOrder()
 GET     /reviews                reviews.ReviewController.showForm()
 POST    /reviews                reviews.ReviewController.addReview()
 GET     /workflow                workflow.WorkflowController.showBoard()

@@ -1,11 +1,23 @@
-@(form: Form[_root_.users.UserForm], userList: Seq[_root_.users.User], kafkaEvents: Seq[_root_.users.UserCreatedEvent])(implicit request: RequestHeader)
+@(form: Form[_root_.users.UserForm], userList: Seq[_root_.users.User])(implicit request: RequestHeader)
 
 @main("User Details") {
     <h1>User Details</h1>
 
     <div class="concept-banner">
-        <h3>Concepts: Play Forms, Slick ORM, Kafka Producer/Consumer</h3>
-        <p>This page demonstrates the Play Framework form binding, Slick database operations, and Kafka event-driven messaging.</p>
+        <h3>Concepts: Slick Table Mappings, Case Classes, Repository Pattern, Futures</h3>
+        <p>User data is persisted via Slick ORM. A <code>case class User</code> maps directly to a database table through a <code>Table[User]</code> definition. All queries return <code>Future</code> and follow the repository pattern.</p>
+        <pre><code>case class User(id: Long, name: String, email: String, phone: String)
+
+class UsersTable(tag: Tag) extends Table[User](tag, "users"):
+  def id    = column[Long]("id", O.PrimaryKey, O.AutoInc)
+  def name  = column[String]("name")
+  def email = column[String]("email")
+  def phone = column[String]("phone")
+  def * = (id, name, email, phone).mapTo[User]
+
+// Repository pattern - all DB ops return Future
+def list(): Future[Seq[User]] = db.run(users.result)
+def create(name: String, ...): Future[User] = db.run(insertQuery += (...))</code></pre>
     </div>
 
     @request.flash.get("success").map { message =>
@@ -39,8 +51,28 @@
             }
         </div>
 
-        <button type="submit">Save User</button>
+        <div class="btn-group">
+            <button type="submit">Save User</button>
+            <button type="button" class="btn-autofill" onclick="autoFillUser()">Auto Fill</button>
+        </div>
     }
+
+    <script>
+    function autoFillUser() {
+        var users = [
+            { name: 'Alice Johnson', email: 'alice.johnson@@example.com', phone: '555-0101' },
+            { name: 'Bob Martinez', email: 'bob.martinez@@shopmail.com', phone: '555-0202' },
+            { name: 'Carol Chen', email: 'carol.chen@@techcorp.io', phone: '555-0303' },
+            { name: 'David Kim', email: 'david.kim@@startup.dev', phone: '555-0404' },
+            { name: 'Eva Rossi', email: 'eva.rossi@@designlab.co', phone: '555-0505' },
+            { name: 'Frank Okafor', email: 'frank.okafor@@globalshop.com', phone: '555-0606' }
+        ];
+        var u = users[Math.floor(Math.random() * users.length)];
+        document.getElementById('name').value = u.name;
+        document.getElementById('email').value = u.email;
+        document.getElementById('phone').value = u.phone;
+    }
+    </script>
 
     <h2>Saved Users</h2>
     @if(userList.isEmpty) {
@@ -62,36 +94,6 @@
                         <td>@user.name</td>
                         <td>@user.email</td>
                         <td>@user.phone</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    <h2>Kafka Events</h2>
-    @if(kafkaEvents.isEmpty) {
-        <p>No events consumed yet.</p>
-    } else {
-        <table>
-            <thead>
-                <tr>
-                    <th>Event Type</th>
-                    <th>Timestamp</th>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for(event <- kafkaEvents) {
-                    <tr>
-                        <td>@event.eventType</td>
-                        <td>@event.timestamp</td>
-                        <td>@event.user.id</td>
-                        <td>@event.user.name</td>
-                        <td>@event.user.email</td>
-                        <td>@event.user.phone</td>
                     </tr>
                 }
             </tbody>

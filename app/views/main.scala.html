@@ -31,6 +31,8 @@
         .btn-orange { background: #FF9800; }
         .btn-red { background: #f44336; }
         .btn-sm { padding: 5px 12px; font-size: 0.85em; }
+        .btn-autofill { background: #607D8B; }
+        .btn-group { display: flex; gap: 8px; margin-top: 8px; }
         .success { background: #dff0d8; color: #3c763d; padding: 10px; border-radius: 4px; margin-bottom: 16px; }
         .error-msg { color: #a94442; font-size: 0.9em; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
@@ -55,13 +57,8 @@
         <a class="brand" href="@_root_.controllers.routes.HomeController.index()">Scala Playbook</a>
         <div class="nav-divider"></div>
         <div class="nav-section">
-            <span class="nav-label">Existing</span>
-            <a href="@_root_.users.routes.UserController.showForm()">Users</a>
-            <a href="@_root_.orders.routes.OrderController.showForm()">Orders</a>
-        </div>
-        <div class="nav-divider"></div>
-        <div class="nav-section">
             <span class="nav-label">Core</span>
+            <a href="@_root_.users.routes.UserController.showForm()">Users</a>
             <a href="@_root_.products.routes.ProductController.showForm()">Products</a>
             <a href="@_root_.cart.routes.CartController.showCart()">Cart</a>
             <a href="@_root_.coupons.routes.CouponController.showForm()">Coupons</a>
@@ -71,6 +68,7 @@
         <div class="nav-divider"></div>
         <div class="nav-section">
             <span class="nav-label">Advanced</span>
+            <a href="@_root_.orders.routes.OrderController.showForm()">Orders</a>
             <a href="@_root_.reviews.routes.ReviewController.showForm()">Reviews</a>
             <a href="@_root_.workflow.routes.WorkflowController.showBoard()">Workflow</a>
             <a href="@_root_.ledger.routes.LedgerController.showLedger()">Ledger</a>

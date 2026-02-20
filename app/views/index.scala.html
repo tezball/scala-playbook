@@ -4,22 +4,13 @@
     <h1>Scala Playbook</h1>
     <p>Learn Scala concepts through real-world e-commerce scenarios. Each page demonstrates specific Scala features with interactive forms and visible results.</p>
 
-    <h2>Existing Modules</h2>
+    <h2>Core Concepts</h2>
     <div class="cards">
         <div class="card">
             <h3><a href="@_root_.users.routes.UserController.showForm()">Users</a></h3>
-            <p>User management with PostgreSQL (Slick) and Kafka event publishing.</p>
-            <p><strong>Concepts:</strong> Play Forms, Slick ORM, Kafka Producer/Consumer</p>
+            <p>User registration with database persistence via Slick ORM.</p>
+            <p><strong>Concepts:</strong> Slick Table Mappings, Case Classes, Repository Pattern, Futures</p>
         </div>
-        <div class="card">
-            <h3><a href="@_root_.orders.routes.OrderController.showForm()">Orders</a></h3>
-            <p>Order placement with database persistence and Kafka checkout events.</p>
-            <p><strong>Concepts:</strong> Play Forms, Slick ORM, Kafka Producer/Consumer</p>
-        </div>
-    </div>
-
-    <h2>Core Concepts</h2>
-    <div class="cards">
         <div class="card">
             <h3><a href="@_root_.products.routes.ProductController.showForm()">Products</a></h3>
             <p>Product catalog with categories and pricing rules.</p>
@@ -49,6 +40,11 @@
 
     <h2>Advanced Concepts</h2>
     <div class="cards">
+        <div class="card">
+            <h3><a href="@_root_.orders.routes.OrderController.showForm()">Orders</a></h3>
+            <p>Order placement with Kafka event-driven checkout messaging.</p>
+            <p><strong>Concepts:</strong> Kafka Producer/Consumer, Event Serialization, JSON Formats, Async Messaging</p>
+        </div>
         <div class="card">
             <h3><a href="@_root_.reviews.routes.ReviewController.showForm()">Reviews</a></h3>
             <p>Product reviews with sorting and rendering.</p>

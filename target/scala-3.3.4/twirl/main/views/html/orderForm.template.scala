@@ -29,49 +29,61 @@ Seq[Any](format.raw/*2.1*/("""
     """),format.raw/*4.5*/("""<h1>Place Order</h1>
 
     <div class="concept-banner">
-        <h3>Concepts: Play Forms, Slick ORM, Kafka Producer/Consumer</h3>
-        <p>This page demonstrates order placement with database persistence and Kafka event publishing for checkout emails.</p>
+        <h3>Advanced Concepts: Kafka Producer/Consumer, Event Serialization, JSON Formats, Async Messaging</h3>
+        <p>When an order is placed, an <code>OrderPlacedEvent</code> is published to Kafka. A background consumer thread reads events and displays them below. This demonstrates event-driven architecture with typed JSON serialization using Play's <code>Format</code> type class.</p>
+        <pre><code>// Event case class with JSON Format (type class instance via given)
+case class OrderPlacedEvent(eventType: String, timestamp: String, order: OrderPayload)
+object OrderPlacedEvent:
+  given Format[OrderPlacedEvent] = Json.format[OrderPlacedEvent]
+
+// Publish to Kafka after DB write
+kafkaProducer.publish(topic, order.id.toString, Json.toJson(event).toString())
+
+// Consumer polls in a background thread
+val records = consumer.poll(Duration.ofMillis(500))
+for record &lt;- records.asScala do
+  Json.parse(record.value()).validate[OrderPlacedEvent]</code></pre>
     </div>
 
-    """),_display_(/*11.6*/request/*11.13*/.flash.get("success").map/*11.38*/ { message =>_display_(Seq[Any](format.raw/*11.51*/("""
-        """),format.raw/*12.9*/("""<div class="success">"""),_display_(/*12.31*/message),format.raw/*12.38*/("""</div>
-    """)))}),format.raw/*13.6*/("""
+    """),_display_(/*23.6*/request/*23.13*/.flash.get("success").map/*23.38*/ { message =>_display_(Seq[Any](format.raw/*23.51*/("""
+        """),format.raw/*24.9*/("""<div class="success">"""),_display_(/*24.31*/message),format.raw/*24.38*/("""</div>
+    """)))}),format.raw/*25.6*/("""
 
-    """),_display_(/*15.6*/helper/*15.12*/.form(action = orders.routes.OrderController.placeOrder())/*15.70*/ {_display_(Seq[Any](format.raw/*15.72*/("""
-        """),_display_(/*16.10*/helper/*16.16*/.CSRF.formField),format.raw/*16.31*/("""
+    """),_display_(/*27.6*/helper/*27.12*/.form(action = orders.routes.OrderController.placeOrder())/*27.70*/ {_display_(Seq[Any](format.raw/*27.72*/("""
+        """),_display_(/*28.10*/helper/*28.16*/.CSRF.formField),format.raw/*28.31*/("""
 
-        """),format.raw/*18.9*/("""<div class="form-group">
+        """),format.raw/*30.9*/("""<div class="form-group">
             <label for="userName">Your Name</label>
-            <input type="text" id="userName" name="userName" value=""""),_display_(/*20.70*/form("userName")/*20.86*/.value.getOrElse("")),format.raw/*20.106*/("""" required>
-            """),_display_(/*21.14*/form/*21.18*/.error("userName").map/*21.40*/ { error =>_display_(Seq[Any](format.raw/*21.51*/("""
-                """),format.raw/*22.17*/("""<div class="error-msg">"""),_display_(/*22.41*/error/*22.46*/.message),format.raw/*22.54*/("""</div>
-            """)))}),format.raw/*23.14*/("""
-        """),format.raw/*24.9*/("""</div>
+            <input type="text" id="userName" name="userName" value=""""),_display_(/*32.70*/form("userName")/*32.86*/.value.getOrElse("")),format.raw/*32.106*/("""" required>
+            """),_display_(/*33.14*/form/*33.18*/.error("userName").map/*33.40*/ { error =>_display_(Seq[Any](format.raw/*33.51*/("""
+                """),format.raw/*34.17*/("""<div class="error-msg">"""),_display_(/*34.41*/error/*34.46*/.message),format.raw/*34.54*/("""</div>
+            """)))}),format.raw/*35.14*/("""
+        """),format.raw/*36.9*/("""</div>
 
         <div class="form-group">
             <label for="itemName">Item</label>
-            <input type="text" id="itemName" name="itemName" value=""""),_display_(/*28.70*/form("itemName")/*28.86*/.value.getOrElse("")),format.raw/*28.106*/("""" required>
-            """),_display_(/*29.14*/form/*29.18*/.error("itemName").map/*29.40*/ { error =>_display_(Seq[Any](format.raw/*29.51*/("""
-                """),format.raw/*30.17*/("""<div class="error-msg">"""),_display_(/*30.41*/error/*30.46*/.message),format.raw/*30.54*/("""</div>
-            """)))}),format.raw/*31.14*/("""
-        """),format.raw/*32.9*/("""</div>
+            <input type="text" id="itemName" name="itemName" value=""""),_display_(/*40.70*/form("itemName")/*40.86*/.value.getOrElse("")),format.raw/*40.106*/("""" required>
+            """),_display_(/*41.14*/form/*41.18*/.error("itemName").map/*41.40*/ { error =>_display_(Seq[Any](format.raw/*41.51*/("""
+                """),format.raw/*42.17*/("""<div class="error-msg">"""),_display_(/*42.41*/error/*42.46*/.message),format.raw/*42.54*/("""</div>
+            """)))}),format.raw/*43.14*/("""
+        """),format.raw/*44.9*/("""</div>
 
         <div class="form-group">
             <label for="quantity">Quantity</label>
-            <input type="number" id="quantity" name="quantity" value=""""),_display_(/*36.72*/form("quantity")/*36.88*/.value.getOrElse("1")),format.raw/*36.109*/("""" min="1" required>
-            """),_display_(/*37.14*/form/*37.18*/.error("quantity").map/*37.40*/ { error =>_display_(Seq[Any](format.raw/*37.51*/("""
-                """),format.raw/*38.17*/("""<div class="error-msg">"""),_display_(/*38.41*/error/*38.46*/.message),format.raw/*38.54*/("""</div>
-            """)))}),format.raw/*39.14*/("""
-        """),format.raw/*40.9*/("""</div>
+            <input type="number" id="quantity" name="quantity" value=""""),_display_(/*48.72*/form("quantity")/*48.88*/.value.getOrElse("1")),format.raw/*48.109*/("""" min="1" required>
+            """),_display_(/*49.14*/form/*49.18*/.error("quantity").map/*49.40*/ { error =>_display_(Seq[Any](format.raw/*49.51*/("""
+                """),format.raw/*50.17*/("""<div class="error-msg">"""),_display_(/*50.41*/error/*50.46*/.message),format.raw/*50.54*/("""</div>
+            """)))}),format.raw/*51.14*/("""
+        """),format.raw/*52.9*/("""</div>
 
         <button type="submit" class="btn-blue">Place Order</button>
-    """)))}),format.raw/*43.6*/("""
+    """)))}),format.raw/*55.6*/("""
 
-    """),format.raw/*45.5*/("""<h2>Orders</h2>
-    """),_display_(if(orderList.isEmpty)/*46.27*/ {_display_(Seq[Any](format.raw/*46.29*/("""
-        """),format.raw/*47.9*/("""<p>No orders placed yet.</p>
-    """)))}else/*48.12*/{_display_(Seq[Any](format.raw/*48.13*/("""
-        """),format.raw/*49.9*/("""<table>
+    """),format.raw/*57.5*/("""<h2>Orders</h2>
+    """),_display_(if(orderList.isEmpty)/*58.27*/ {_display_(Seq[Any](format.raw/*58.29*/("""
+        """),format.raw/*59.9*/("""<p>No orders placed yet.</p>
+    """)))}else/*60.12*/{_display_(Seq[Any](format.raw/*60.13*/("""
+        """),format.raw/*61.9*/("""<table>
             <thead>
                 <tr>
                     <th>ID</th>
@@ -81,23 +93,23 @@ Seq[Any](format.raw/*2.1*/("""
                 </tr>
             </thead>
             <tbody>
-                """),_display_(/*59.18*/for(order <- orderList) yield /*59.41*/ {_display_(Seq[Any](format.raw/*59.43*/("""
-                    """),format.raw/*60.21*/("""<tr>
-                        <td>"""),_display_(/*61.30*/order/*61.35*/.id),format.raw/*61.38*/("""</td>
-                        <td>"""),_display_(/*62.30*/order/*62.35*/.userName),format.raw/*62.44*/("""</td>
-                        <td>"""),_display_(/*63.30*/order/*63.35*/.itemName),format.raw/*63.44*/("""</td>
-                        <td>"""),_display_(/*64.30*/order/*64.35*/.quantity),format.raw/*64.44*/("""</td>
+                """),_display_(/*71.18*/for(order <- orderList) yield /*71.41*/ {_display_(Seq[Any](format.raw/*71.43*/("""
+                    """),format.raw/*72.21*/("""<tr>
+                        <td>"""),_display_(/*73.30*/order/*73.35*/.id),format.raw/*73.38*/("""</td>
+                        <td>"""),_display_(/*74.30*/order/*74.35*/.userName),format.raw/*74.44*/("""</td>
+                        <td>"""),_display_(/*75.30*/order/*75.35*/.itemName),format.raw/*75.44*/("""</td>
+                        <td>"""),_display_(/*76.30*/order/*76.35*/.quantity),format.raw/*76.44*/("""</td>
                     </tr>
-                """)))}),format.raw/*66.18*/("""
-            """),format.raw/*67.13*/("""</tbody>
+                """)))}),format.raw/*78.18*/("""
+            """),format.raw/*79.13*/("""</tbody>
         </table>
-    """)))}),format.raw/*69.6*/("""
+    """)))}),format.raw/*81.6*/("""
 
-    """),format.raw/*71.5*/("""<h2>Checkout Emails (Kafka Events)</h2>
-    """),_display_(if(kafkaEvents.isEmpty)/*72.29*/ {_display_(Seq[Any](format.raw/*72.31*/("""
-        """),format.raw/*73.9*/("""<p>No checkout emails queued yet.</p>
-    """)))}else/*74.12*/{_display_(Seq[Any](format.raw/*74.13*/("""
-        """),format.raw/*75.9*/("""<table>
+    """),format.raw/*83.5*/("""<h2>Checkout Emails (Kafka Events)</h2>
+    """),_display_(if(kafkaEvents.isEmpty)/*84.29*/ {_display_(Seq[Any](format.raw/*84.31*/("""
+        """),format.raw/*85.9*/("""<p>No checkout emails queued yet.</p>
+    """)))}else/*86.12*/{_display_(Seq[Any](format.raw/*86.13*/("""
+        """),format.raw/*87.9*/("""<table>
             <thead>
                 <tr>
                     <th>Event Type</th>
@@ -109,20 +121,20 @@ Seq[Any](format.raw/*2.1*/("""
                 </tr>
             </thead>
             <tbody>
-                """),_display_(/*87.18*/for(event <- kafkaEvents) yield /*87.43*/ {_display_(Seq[Any](format.raw/*87.45*/("""
-                    """),format.raw/*88.21*/("""<tr>
-                        <td>"""),_display_(/*89.30*/event/*89.35*/.eventType),format.raw/*89.45*/("""</td>
-                        <td>"""),_display_(/*90.30*/event/*90.35*/.timestamp),format.raw/*90.45*/("""</td>
-                        <td>"""),_display_(/*91.30*/event/*91.35*/.order.id),format.raw/*91.44*/("""</td>
-                        <td>"""),_display_(/*92.30*/event/*92.35*/.order.userName),format.raw/*92.50*/("""</td>
-                        <td>"""),_display_(/*93.30*/event/*93.35*/.order.itemName),format.raw/*93.50*/("""</td>
-                        <td>"""),_display_(/*94.30*/event/*94.35*/.order.quantity),format.raw/*94.50*/("""</td>
+                """),_display_(/*99.18*/for(event <- kafkaEvents) yield /*99.43*/ {_display_(Seq[Any](format.raw/*99.45*/("""
+                    """),format.raw/*100.21*/("""<tr>
+                        <td>"""),_display_(/*101.30*/event/*101.35*/.eventType),format.raw/*101.45*/("""</td>
+                        <td>"""),_display_(/*102.30*/event/*102.35*/.timestamp),format.raw/*102.45*/("""</td>
+                        <td>"""),_display_(/*103.30*/event/*103.35*/.order.id),format.raw/*103.44*/("""</td>
+                        <td>"""),_display_(/*104.30*/event/*104.35*/.order.userName),format.raw/*104.50*/("""</td>
+                        <td>"""),_display_(/*105.30*/event/*105.35*/.order.itemName),format.raw/*105.50*/("""</td>
+                        <td>"""),_display_(/*106.30*/event/*106.35*/.order.quantity),format.raw/*106.50*/("""</td>
                     </tr>
-                """)))}),format.raw/*96.18*/("""
-            """),format.raw/*97.13*/("""</tbody>
+                """)))}),format.raw/*108.18*/("""
+            """),format.raw/*109.13*/("""</tbody>
         </table>
-    """)))}),format.raw/*99.6*/("""
-""")))}),format.raw/*100.2*/("""
+    """)))}),format.raw/*111.6*/("""
+""")))}),format.raw/*112.2*/("""
 """))
       }
     }
@@ -140,9 +152,9 @@ Seq[Any](format.raw/*2.1*/("""
               /*
                   -- GENERATED --
                   SOURCE: app/views/orderForm.scala.html
-                  HASH: 03637bae0f6820b01b077100fd609300d53f0a43
-                  MATRIX: 869->1|1120->159|1147->161|1174->180|1213->182|1244->187|1544->461|1560->468|1594->493|1645->506|1681->515|1730->537|1758->544|1800->556|1833->563|1848->569|1915->627|1955->629|1992->639|2007->645|2043->660|2080->670|2253->816|2278->832|2320->852|2372->877|2385->881|2416->903|2465->914|2510->931|2561->955|2575->960|2604->968|2655->988|2691->997|2875->1154|2900->1170|2942->1190|2994->1215|3007->1219|3038->1241|3087->1252|3132->1269|3183->1293|3197->1298|3226->1306|3277->1326|3313->1335|3503->1498|3528->1514|3571->1535|3631->1568|3644->1572|3675->1594|3724->1605|3769->1622|3820->1646|3834->1651|3863->1659|3914->1679|3950->1688|4061->1769|4094->1775|4163->1817|4203->1819|4239->1828|4296->1868|4335->1869|4371->1878|4660->2140|4699->2163|4739->2165|4788->2186|4849->2220|4863->2225|4887->2228|4949->2263|4963->2268|4993->2277|5055->2312|5069->2317|5099->2326|5161->2361|5175->2366|5205->2375|5285->2424|5326->2437|5387->2468|5420->2474|5515->2542|5555->2544|5591->2553|5657->2602|5696->2603|5732->2612|6106->2959|6147->2984|6187->2986|6236->3007|6297->3041|6311->3046|6342->3056|6404->3091|6418->3096|6449->3106|6511->3141|6525->3146|6555->3155|6617->3190|6631->3195|6667->3210|6729->3245|6743->3250|6779->3265|6841->3300|6855->3305|6891->3320|6971->3369|7012->3382|7073->3413|7106->3415
-                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|36->11|36->11|36->11|36->11|37->12|37->12|37->12|38->13|40->15|40->15|40->15|40->15|41->16|41->16|41->16|43->18|45->20|45->20|45->20|46->21|46->21|46->21|46->21|47->22|47->22|47->22|47->22|48->23|49->24|53->28|53->28|53->28|54->29|54->29|54->29|54->29|55->30|55->30|55->30|55->30|56->31|57->32|61->36|61->36|61->36|62->37|62->37|62->37|62->37|63->38|63->38|63->38|63->38|64->39|65->40|68->43|70->45|71->46|71->46|72->47|73->48|73->48|74->49|84->59|84->59|84->59|85->60|86->61|86->61|86->61|87->62|87->62|87->62|88->63|88->63|88->63|89->64|89->64|89->64|91->66|92->67|94->69|96->71|97->72|97->72|98->73|99->74|99->74|100->75|112->87|112->87|112->87|113->88|114->89|114->89|114->89|115->90|115->90|115->90|116->91|116->91|116->91|117->92|117->92|117->92|118->93|118->93|118->93|119->94|119->94|119->94|121->96|122->97|124->99|125->100
+                  HASH: 7bdcb2df7383f3f97159dc8c65fed3c00b94e57c
+                  MATRIX: 869->1|1120->159|1147->161|1174->180|1213->182|1244->187|2315->1232|2331->1239|2365->1264|2416->1277|2452->1286|2501->1308|2529->1315|2571->1327|2604->1334|2619->1340|2686->1398|2726->1400|2763->1410|2778->1416|2814->1431|2851->1441|3024->1587|3049->1603|3091->1623|3143->1648|3156->1652|3187->1674|3236->1685|3281->1702|3332->1726|3346->1731|3375->1739|3426->1759|3462->1768|3646->1925|3671->1941|3713->1961|3765->1986|3778->1990|3809->2012|3858->2023|3903->2040|3954->2064|3968->2069|3997->2077|4048->2097|4084->2106|4274->2269|4299->2285|4342->2306|4402->2339|4415->2343|4446->2365|4495->2376|4540->2393|4591->2417|4605->2422|4634->2430|4685->2450|4721->2459|4832->2540|4865->2546|4934->2588|4974->2590|5010->2599|5067->2639|5106->2640|5142->2649|5431->2911|5470->2934|5510->2936|5559->2957|5620->2991|5634->2996|5658->2999|5720->3034|5734->3039|5764->3048|5826->3083|5840->3088|5870->3097|5932->3132|5946->3137|5976->3146|6056->3195|6097->3208|6158->3239|6191->3245|6286->3313|6326->3315|6362->3324|6428->3373|6467->3374|6503->3383|6877->3730|6918->3755|6958->3757|7008->3778|7070->3812|7085->3817|7117->3827|7180->3862|7195->3867|7227->3877|7290->3912|7305->3917|7336->3926|7399->3961|7414->3966|7451->3981|7514->4016|7529->4021|7566->4036|7629->4071|7644->4076|7681->4091|7762->4140|7804->4153|7866->4184|7899->4186
+                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|48->23|48->23|48->23|48->23|49->24|49->24|49->24|50->25|52->27|52->27|52->27|52->27|53->28|53->28|53->28|55->30|57->32|57->32|57->32|58->33|58->33|58->33|58->33|59->34|59->34|59->34|59->34|60->35|61->36|65->40|65->40|65->40|66->41|66->41|66->41|66->41|67->42|67->42|67->42|67->42|68->43|69->44|73->48|73->48|73->48|74->49|74->49|74->49|74->49|75->50|75->50|75->50|75->50|76->51|77->52|80->55|82->57|83->58|83->58|84->59|85->60|85->60|86->61|96->71|96->71|96->71|97->72|98->73|98->73|98->73|99->74|99->74|99->74|100->75|100->75|100->75|101->76|101->76|101->76|103->78|104->79|106->81|108->83|109->84|109->84|110->85|111->86|111->86|112->87|124->99|124->99|124->99|125->100|126->101|126->101|126->101|127->102|127->102|127->102|128->103|128->103|128->103|129->104|129->104|129->104|130->105|130->105|130->105|131->106|131->106|131->106|133->108|134->109|136->111|137->112
                   -- GENERATED --
               */
           

@@ -6,23 +6,23 @@ import play.api.mvc.Call
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:15
+// @LINE:11
 package coupons {
 
-  // @LINE:15
+  // @LINE:11
   class ReverseCouponController(_prefix: => String) {
     def _defaultPrefix: String = {
       if (_prefix.endsWith("/")) "" else "/"
     }
 
   
-    // @LINE:15
+    // @LINE:11
     def showForm(): Call = {
       
       Call("GET", _prefix + { _defaultPrefix } + "coupons")
     }
   
-    // @LINE:16
+    // @LINE:12
     def validateCoupon(): Call = {
       
       Call("POST", _prefix + { _defaultPrefix } + "coupons")

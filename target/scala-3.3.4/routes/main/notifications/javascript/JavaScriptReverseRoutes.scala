@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:17
+// @LINE:13
 package notifications.javascript {
 
-  // @LINE:17
+  // @LINE:13
   class ReverseNotificationController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package notifications.javascript {
     }
 
   
-    // @LINE:17
+    // @LINE:13
     def showForm: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "notifications.NotificationController.showForm",
       """
@@ -27,7 +27,7 @@ package notifications.javascript {
       """
     )
   
-    // @LINE:18
+    // @LINE:14
     def sendNotification: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "notifications.NotificationController.sendNotification",
       """

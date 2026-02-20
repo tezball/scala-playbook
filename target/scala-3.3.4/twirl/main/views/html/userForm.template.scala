@@ -16,10 +16,10 @@ import play.api.templates.PlayMagic._
 import play.api.mvc._
 import play.api.data._
 
-object userForm extends _root_.play.twirl.api.BaseScalaTemplate[play.twirl.api.HtmlFormat.Appendable,_root_.play.twirl.api.Format[play.twirl.api.HtmlFormat.Appendable]](play.twirl.api.HtmlFormat) with _root_.play.twirl.api.Template4[Form[_root_.users.UserForm],Seq[_root_.users.User],Seq[_root_.users.UserCreatedEvent],RequestHeader,play.twirl.api.HtmlFormat.Appendable] {
+object userForm extends _root_.play.twirl.api.BaseScalaTemplate[play.twirl.api.HtmlFormat.Appendable,_root_.play.twirl.api.Format[play.twirl.api.HtmlFormat.Appendable]](play.twirl.api.HtmlFormat) with _root_.play.twirl.api.Template3[Form[_root_.users.UserForm],Seq[_root_.users.User],RequestHeader,play.twirl.api.HtmlFormat.Appendable] {
 
   /**/
-  def apply/*1.2*/(form: Form[_root_.users.UserForm], userList: Seq[_root_.users.User], kafkaEvents: Seq[_root_.users.UserCreatedEvent])(implicit request: RequestHeader):play.twirl.api.HtmlFormat.Appendable = {
+  def apply/*1.2*/(form: Form[_root_.users.UserForm], userList: Seq[_root_.users.User])(implicit request: RequestHeader):play.twirl.api.HtmlFormat.Appendable = {
     _display_ {
       {
 
@@ -29,49 +29,61 @@ Seq[Any](format.raw/*2.1*/("""
     """),format.raw/*4.5*/("""<h1>User Details</h1>
 
     <div class="concept-banner">
-        <h3>Concepts: Play Forms, Slick ORM, Kafka Producer/Consumer</h3>
-        <p>This page demonstrates the Play Framework form binding, Slick database operations, and Kafka event-driven messaging.</p>
+        <h3>Concepts: Slick Table Mappings, Case Classes, Repository Pattern, Futures</h3>
+        <p>User data is persisted via Slick ORM. A <code>case class User</code> maps directly to a database table through a <code>Table[User]</code> definition. All queries return <code>Future</code> and follow the repository pattern.</p>
+        <pre><code>case class User(id: Long, name: String, email: String, phone: String)
+
+class UsersTable(tag: Tag) extends Table[User](tag, "users"):
+  def id    = column[Long]("id", O.PrimaryKey, O.AutoInc)
+  def name  = column[String]("name")
+  def email = column[String]("email")
+  def phone = column[String]("phone")
+  def * = (id, name, email, phone).mapTo[User]
+
+// Repository pattern - all DB ops return Future
+def list(): Future[Seq[User]] = db.run(users.result)
+def create(name: String, ...): Future[User] = db.run(insertQuery += (...))</code></pre>
     </div>
 
-    """),_display_(/*11.6*/request/*11.13*/.flash.get("success").map/*11.38*/ { message =>_display_(Seq[Any](format.raw/*11.51*/("""
-        """),format.raw/*12.9*/("""<div class="success">"""),_display_(/*12.31*/message),format.raw/*12.38*/("""</div>
-    """)))}),format.raw/*13.6*/("""
+    """),_display_(/*23.6*/request/*23.13*/.flash.get("success").map/*23.38*/ { message =>_display_(Seq[Any](format.raw/*23.51*/("""
+        """),format.raw/*24.9*/("""<div class="success">"""),_display_(/*24.31*/message),format.raw/*24.38*/("""</div>
+    """)))}),format.raw/*25.6*/("""
 
-    """),_display_(/*15.6*/helper/*15.12*/.form(action = users.routes.UserController.saveUser())/*15.66*/ {_display_(Seq[Any](format.raw/*15.68*/("""
-        """),_display_(/*16.10*/helper/*16.16*/.CSRF.formField),format.raw/*16.31*/("""
+    """),_display_(/*27.6*/helper/*27.12*/.form(action = users.routes.UserController.saveUser())/*27.66*/ {_display_(Seq[Any](format.raw/*27.68*/("""
+        """),_display_(/*28.10*/helper/*28.16*/.CSRF.formField),format.raw/*28.31*/("""
 
-        """),format.raw/*18.9*/("""<div class="form-group">
+        """),format.raw/*30.9*/("""<div class="form-group">
             <label for="name">Name</label>
-            <input type="text" id="name" name="name" value=""""),_display_(/*20.62*/form("name")/*20.74*/.value.getOrElse("")),format.raw/*20.94*/("""" required>
-            """),_display_(/*21.14*/form/*21.18*/.error("name").map/*21.36*/ { error =>_display_(Seq[Any](format.raw/*21.47*/("""
-                """),format.raw/*22.17*/("""<div class="error-msg">"""),_display_(/*22.41*/error/*22.46*/.message),format.raw/*22.54*/("""</div>
-            """)))}),format.raw/*23.14*/("""
-        """),format.raw/*24.9*/("""</div>
+            <input type="text" id="name" name="name" value=""""),_display_(/*32.62*/form("name")/*32.74*/.value.getOrElse("")),format.raw/*32.94*/("""" required>
+            """),_display_(/*33.14*/form/*33.18*/.error("name").map/*33.36*/ { error =>_display_(Seq[Any](format.raw/*33.47*/("""
+                """),format.raw/*34.17*/("""<div class="error-msg">"""),_display_(/*34.41*/error/*34.46*/.message),format.raw/*34.54*/("""</div>
+            """)))}),format.raw/*35.14*/("""
+        """),format.raw/*36.9*/("""</div>
 
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" value=""""),_display_(/*28.65*/form("email")/*28.78*/.value.getOrElse("")),format.raw/*28.98*/("""" required>
-            """),_display_(/*29.14*/form/*29.18*/.error("email").map/*29.37*/ { error =>_display_(Seq[Any](format.raw/*29.48*/("""
-                """),format.raw/*30.17*/("""<div class="error-msg">"""),_display_(/*30.41*/error/*30.46*/.message),format.raw/*30.54*/("""</div>
-            """)))}),format.raw/*31.14*/("""
-        """),format.raw/*32.9*/("""</div>
+            <input type="email" id="email" name="email" value=""""),_display_(/*40.65*/form("email")/*40.78*/.value.getOrElse("")),format.raw/*40.98*/("""" required>
+            """),_display_(/*41.14*/form/*41.18*/.error("email").map/*41.37*/ { error =>_display_(Seq[Any](format.raw/*41.48*/("""
+                """),format.raw/*42.17*/("""<div class="error-msg">"""),_display_(/*42.41*/error/*42.46*/.message),format.raw/*42.54*/("""</div>
+            """)))}),format.raw/*43.14*/("""
+        """),format.raw/*44.9*/("""</div>
 
         <div class="form-group">
             <label for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone" value=""""),_display_(/*36.63*/form("phone")/*36.76*/.value.getOrElse("")),format.raw/*36.96*/("""" required>
-            """),_display_(/*37.14*/form/*37.18*/.error("phone").map/*37.37*/ { error =>_display_(Seq[Any](format.raw/*37.48*/("""
-                """),format.raw/*38.17*/("""<div class="error-msg">"""),_display_(/*38.41*/error/*38.46*/.message),format.raw/*38.54*/("""</div>
-            """)))}),format.raw/*39.14*/("""
-        """),format.raw/*40.9*/("""</div>
+            <input type="tel" id="phone" name="phone" value=""""),_display_(/*48.63*/form("phone")/*48.76*/.value.getOrElse("")),format.raw/*48.96*/("""" required>
+            """),_display_(/*49.14*/form/*49.18*/.error("phone").map/*49.37*/ { error =>_display_(Seq[Any](format.raw/*49.48*/("""
+                """),format.raw/*50.17*/("""<div class="error-msg">"""),_display_(/*50.41*/error/*50.46*/.message),format.raw/*50.54*/("""</div>
+            """)))}),format.raw/*51.14*/("""
+        """),format.raw/*52.9*/("""</div>
 
         <button type="submit">Save User</button>
-    """)))}),format.raw/*43.6*/("""
+    """)))}),format.raw/*55.6*/("""
 
-    """),format.raw/*45.5*/("""<h2>Saved Users</h2>
-    """),_display_(if(userList.isEmpty)/*46.26*/ {_display_(Seq[Any](format.raw/*46.28*/("""
-        """),format.raw/*47.9*/("""<p>No users saved yet.</p>
-    """)))}else/*48.12*/{_display_(Seq[Any](format.raw/*48.13*/("""
-        """),format.raw/*49.9*/("""<table>
+    """),format.raw/*57.5*/("""<h2>Saved Users</h2>
+    """),_display_(if(userList.isEmpty)/*58.26*/ {_display_(Seq[Any](format.raw/*58.28*/("""
+        """),format.raw/*59.9*/("""<p>No users saved yet.</p>
+    """)))}else/*60.12*/{_display_(Seq[Any](format.raw/*60.13*/("""
+        """),format.raw/*61.9*/("""<table>
             <thead>
                 <tr>
                     <th>ID</th>
@@ -81,56 +93,26 @@ Seq[Any](format.raw/*2.1*/("""
                 </tr>
             </thead>
             <tbody>
-                """),_display_(/*59.18*/for(user <- userList) yield /*59.39*/ {_display_(Seq[Any](format.raw/*59.41*/("""
-                    """),format.raw/*60.21*/("""<tr>
-                        <td>"""),_display_(/*61.30*/user/*61.34*/.id),format.raw/*61.37*/("""</td>
-                        <td>"""),_display_(/*62.30*/user/*62.34*/.name),format.raw/*62.39*/("""</td>
-                        <td>"""),_display_(/*63.30*/user/*63.34*/.email),format.raw/*63.40*/("""</td>
-                        <td>"""),_display_(/*64.30*/user/*64.34*/.phone),format.raw/*64.40*/("""</td>
+                """),_display_(/*71.18*/for(user <- userList) yield /*71.39*/ {_display_(Seq[Any](format.raw/*71.41*/("""
+                    """),format.raw/*72.21*/("""<tr>
+                        <td>"""),_display_(/*73.30*/user/*73.34*/.id),format.raw/*73.37*/("""</td>
+                        <td>"""),_display_(/*74.30*/user/*74.34*/.name),format.raw/*74.39*/("""</td>
+                        <td>"""),_display_(/*75.30*/user/*75.34*/.email),format.raw/*75.40*/("""</td>
+                        <td>"""),_display_(/*76.30*/user/*76.34*/.phone),format.raw/*76.40*/("""</td>
                     </tr>
-                """)))}),format.raw/*66.18*/("""
-            """),format.raw/*67.13*/("""</tbody>
+                """)))}),format.raw/*78.18*/("""
+            """),format.raw/*79.13*/("""</tbody>
         </table>
-    """)))}),format.raw/*69.6*/("""
-
-    """),format.raw/*71.5*/("""<h2>Kafka Events</h2>
-    """),_display_(if(kafkaEvents.isEmpty)/*72.29*/ {_display_(Seq[Any](format.raw/*72.31*/("""
-        """),format.raw/*73.9*/("""<p>No events consumed yet.</p>
-    """)))}else/*74.12*/{_display_(Seq[Any](format.raw/*74.13*/("""
-        """),format.raw/*75.9*/("""<table>
-            <thead>
-                <tr>
-                    <th>Event Type</th>
-                    <th>Timestamp</th>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                </tr>
-            </thead>
-            <tbody>
-                """),_display_(/*87.18*/for(event <- kafkaEvents) yield /*87.43*/ {_display_(Seq[Any](format.raw/*87.45*/("""
-                    """),format.raw/*88.21*/("""<tr>
-                        <td>"""),_display_(/*89.30*/event/*89.35*/.eventType),format.raw/*89.45*/("""</td>
-                        <td>"""),_display_(/*90.30*/event/*90.35*/.timestamp),format.raw/*90.45*/("""</td>
-                        <td>"""),_display_(/*91.30*/event/*91.35*/.user.id),format.raw/*91.43*/("""</td>
-                        <td>"""),_display_(/*92.30*/event/*92.35*/.user.name),format.raw/*92.45*/("""</td>
-                        <td>"""),_display_(/*93.30*/event/*93.35*/.user.email),format.raw/*93.46*/("""</td>
-                        <td>"""),_display_(/*94.30*/event/*94.35*/.user.phone),format.raw/*94.46*/("""</td>
-                    </tr>
-                """)))}),format.raw/*96.18*/("""
-            """),format.raw/*97.13*/("""</tbody>
-        </table>
-    """)))}),format.raw/*99.6*/("""
-""")))}),format.raw/*100.2*/("""
+    """)))}),format.raw/*81.6*/("""
+""")))}),format.raw/*82.2*/("""
 """))
       }
     }
   }
 
-  def render(form:Form[_root_.users.UserForm],userList:Seq[_root_.users.User],kafkaEvents:Seq[_root_.users.UserCreatedEvent],request:RequestHeader): play.twirl.api.HtmlFormat.Appendable = apply(form,userList,kafkaEvents)(request)
+  def render(form:Form[_root_.users.UserForm],userList:Seq[_root_.users.User],request:RequestHeader): play.twirl.api.HtmlFormat.Appendable = apply(form,userList)(request)
 
-  def f:((Form[_root_.users.UserForm],Seq[_root_.users.User],Seq[_root_.users.UserCreatedEvent]) => (RequestHeader) => play.twirl.api.HtmlFormat.Appendable) = (form,userList,kafkaEvents) => (request) => apply(form,userList,kafkaEvents)(request)
+  def f:((Form[_root_.users.UserForm],Seq[_root_.users.User]) => (RequestHeader) => play.twirl.api.HtmlFormat.Appendable) = (form,userList) => (request) => apply(form,userList)(request)
 
   def ref: this.type = this
 
@@ -140,9 +122,9 @@ Seq[Any](format.raw/*2.1*/("""
               /*
                   -- GENERATED --
                   SOURCE: app/views/userForm.scala.html
-                  HASH: 9d1101385c7fd175d6e24c4c3576ad9036087d5d
-                  MATRIX: 863->1|1108->153|1135->155|1163->175|1202->177|1233->182|1538->461|1554->468|1588->493|1639->506|1675->515|1724->537|1752->544|1794->556|1827->563|1842->569|1905->623|1945->625|1982->635|1997->641|2033->656|2070->666|2226->795|2247->807|2288->827|2340->852|2353->856|2380->874|2429->885|2474->902|2525->926|2539->931|2568->939|2619->959|2655->968|2832->1118|2854->1131|2895->1151|2947->1176|2960->1180|2988->1199|3037->1210|3082->1227|3133->1251|3147->1256|3176->1264|3227->1284|3263->1293|3438->1441|3460->1454|3501->1474|3553->1499|3566->1503|3594->1522|3643->1533|3688->1550|3739->1574|3753->1579|3782->1587|3833->1607|3869->1616|3961->1678|3994->1684|4067->1730|4107->1732|4143->1741|4198->1779|4237->1780|4273->1789|4565->2054|4602->2075|4642->2077|4691->2098|4752->2132|4765->2136|4789->2139|4851->2174|4864->2178|4890->2183|4952->2218|4965->2222|4992->2228|5054->2263|5067->2267|5094->2273|5174->2322|5215->2335|5276->2366|5309->2372|5386->2422|5426->2424|5462->2433|5521->2475|5560->2476|5596->2485|5972->2834|6013->2859|6053->2861|6102->2882|6163->2916|6177->2921|6208->2931|6270->2966|6284->2971|6315->2981|6377->3016|6391->3021|6420->3029|6482->3064|6496->3069|6527->3079|6589->3114|6603->3119|6635->3130|6697->3165|6711->3170|6743->3181|6823->3230|6864->3243|6925->3274|6958->3276
-                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|36->11|36->11|36->11|36->11|37->12|37->12|37->12|38->13|40->15|40->15|40->15|40->15|41->16|41->16|41->16|43->18|45->20|45->20|45->20|46->21|46->21|46->21|46->21|47->22|47->22|47->22|47->22|48->23|49->24|53->28|53->28|53->28|54->29|54->29|54->29|54->29|55->30|55->30|55->30|55->30|56->31|57->32|61->36|61->36|61->36|62->37|62->37|62->37|62->37|63->38|63->38|63->38|63->38|64->39|65->40|68->43|70->45|71->46|71->46|72->47|73->48|73->48|74->49|84->59|84->59|84->59|85->60|86->61|86->61|86->61|87->62|87->62|87->62|88->63|88->63|88->63|89->64|89->64|89->64|91->66|92->67|94->69|96->71|97->72|97->72|98->73|99->74|99->74|100->75|112->87|112->87|112->87|113->88|114->89|114->89|114->89|115->90|115->90|115->90|116->91|116->91|116->91|117->92|117->92|117->92|118->93|118->93|118->93|119->94|119->94|119->94|121->96|122->97|124->99|125->100
+                  HASH: b029ff10243533df05517b4d121e420c44e844fb
+                  MATRIX: 828->1|1024->104|1051->106|1079->126|1118->128|1149->133|2139->1097|2155->1104|2189->1129|2240->1142|2276->1151|2325->1173|2353->1180|2395->1192|2428->1199|2443->1205|2506->1259|2546->1261|2583->1271|2598->1277|2634->1292|2671->1302|2827->1431|2848->1443|2889->1463|2941->1488|2954->1492|2981->1510|3030->1521|3075->1538|3126->1562|3140->1567|3169->1575|3220->1595|3256->1604|3433->1754|3455->1767|3496->1787|3548->1812|3561->1816|3589->1835|3638->1846|3683->1863|3734->1887|3748->1892|3777->1900|3828->1920|3864->1929|4039->2077|4061->2090|4102->2110|4154->2135|4167->2139|4195->2158|4244->2169|4289->2186|4340->2210|4354->2215|4383->2223|4434->2243|4470->2252|4562->2314|4595->2320|4668->2366|4708->2368|4744->2377|4799->2415|4838->2416|4874->2425|5166->2690|5203->2711|5243->2713|5292->2734|5353->2768|5366->2772|5390->2775|5452->2810|5465->2814|5491->2819|5553->2854|5566->2858|5593->2864|5655->2899|5668->2903|5695->2909|5775->2958|5816->2971|5877->3002|5909->3004
+                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|48->23|48->23|48->23|48->23|49->24|49->24|49->24|50->25|52->27|52->27|52->27|52->27|53->28|53->28|53->28|55->30|57->32|57->32|57->32|58->33|58->33|58->33|58->33|59->34|59->34|59->34|59->34|60->35|61->36|65->40|65->40|65->40|66->41|66->41|66->41|66->41|67->42|67->42|67->42|67->42|68->43|69->44|73->48|73->48|73->48|74->49|74->49|74->49|74->49|75->50|75->50|75->50|75->50|76->51|77->52|80->55|82->57|83->58|83->58|84->59|85->60|85->60|86->61|96->71|96->71|96->71|97->72|98->73|98->73|98->73|99->74|99->74|99->74|100->75|100->75|100->75|101->76|101->76|101->76|103->78|104->79|106->81|107->82
                   -- GENERATED --
               */
           

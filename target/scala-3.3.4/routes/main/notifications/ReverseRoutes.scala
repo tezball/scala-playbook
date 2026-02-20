@@ -6,23 +6,23 @@ import play.api.mvc.Call
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:17
+// @LINE:13
 package notifications {
 
-  // @LINE:17
+  // @LINE:13
   class ReverseNotificationController(_prefix: => String) {
     def _defaultPrefix: String = {
       if (_prefix.endsWith("/")) "" else "/"
     }
 
   
-    // @LINE:17
+    // @LINE:13
     def showForm(): Call = {
       
       Call("GET", _prefix + { _defaultPrefix } + "notifications")
     }
   
-    // @LINE:18
+    // @LINE:14
     def sendNotification(): Call = {
       
       Call("POST", _prefix + { _defaultPrefix } + "notifications")

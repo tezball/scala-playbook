@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:15
+// @LINE:11
 package coupons.javascript {
 
-  // @LINE:15
+  // @LINE:11
   class ReverseCouponController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package coupons.javascript {
     }
 
   
-    // @LINE:15
+    // @LINE:11
     def showForm: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "coupons.CouponController.showForm",
       """
@@ -27,7 +27,7 @@ package coupons.javascript {
       """
     )
   
-    // @LINE:16
+    // @LINE:12
     def validateCoupon: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "coupons.CouponController.validateCoupon",
       """

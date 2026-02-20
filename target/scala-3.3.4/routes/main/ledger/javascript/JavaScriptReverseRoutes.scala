@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:27
+// @LINE:25
 package ledger.javascript {
 
-  // @LINE:27
+  // @LINE:25
   class ReverseLedgerController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package ledger.javascript {
     }
 
   
-    // @LINE:27
+    // @LINE:25
     def showLedger: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "ledger.LedgerController.showLedger",
       """
@@ -27,7 +27,7 @@ package ledger.javascript {
       """
     )
   
-    // @LINE:28
+    // @LINE:26
     def addEntry: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "ledger.LedgerController.addEntry",
       """

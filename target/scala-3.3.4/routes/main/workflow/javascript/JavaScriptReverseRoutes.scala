@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:24
+// @LINE:22
 package workflow.javascript {
 
-  // @LINE:24
+  // @LINE:22
   class ReverseWorkflowController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package workflow.javascript {
     }
 
   
-    // @LINE:24
+    // @LINE:22
     def showBoard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "workflow.WorkflowController.showBoard",
       """
@@ -27,7 +27,7 @@ package workflow.javascript {
       """
     )
   
-    // @LINE:25
+    // @LINE:23
     def createOrder: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "workflow.WorkflowController.createOrder",
       """
@@ -37,7 +37,7 @@ package workflow.javascript {
       """
     )
   
-    // @LINE:26
+    // @LINE:24
     def transition: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "workflow.WorkflowController.transition",
       """

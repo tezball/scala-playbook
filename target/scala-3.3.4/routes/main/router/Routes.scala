@@ -17,22 +17,22 @@ class Routes(
   // @LINE:5
   UserController_9: users.UserController,
   // @LINE:7
-  OrderController_6: orders.OrderController,
-  // @LINE:11
   ProductController_1: products.ProductController,
-  // @LINE:13
+  // @LINE:9
   CartController_8: cart.CartController,
-  // @LINE:15
+  // @LINE:11
   CouponController_3: coupons.CouponController,
-  // @LINE:17
+  // @LINE:13
   NotificationController_4: notifications.NotificationController,
-  // @LINE:19
+  // @LINE:15
   AnalyticsController_0: analytics.AnalyticsController,
-  // @LINE:22
+  // @LINE:18
+  OrderController_6: orders.OrderController,
+  // @LINE:20
   ReviewController_5: reviews.ReviewController,
-  // @LINE:24
+  // @LINE:22
   WorkflowController_2: workflow.WorkflowController,
-  // @LINE:27
+  // @LINE:25
   LedgerController_7: ledger.LedgerController,
   val prefix: String
 ) extends GeneratedRouter {
@@ -44,29 +44,29 @@ class Routes(
     // @LINE:5
     UserController_9: users.UserController,
     // @LINE:7
-    OrderController_6: orders.OrderController,
-    // @LINE:11
     ProductController_1: products.ProductController,
-    // @LINE:13
+    // @LINE:9
     CartController_8: cart.CartController,
-    // @LINE:15
+    // @LINE:11
     CouponController_3: coupons.CouponController,
-    // @LINE:17
+    // @LINE:13
     NotificationController_4: notifications.NotificationController,
-    // @LINE:19
+    // @LINE:15
     AnalyticsController_0: analytics.AnalyticsController,
-    // @LINE:22
+    // @LINE:18
+    OrderController_6: orders.OrderController,
+    // @LINE:20
     ReviewController_5: reviews.ReviewController,
-    // @LINE:24
+    // @LINE:22
     WorkflowController_2: workflow.WorkflowController,
-    // @LINE:27
+    // @LINE:25
     LedgerController_7: ledger.LedgerController
-  ) = this(errorHandler, HomeController_10, UserController_9, OrderController_6, ProductController_1, CartController_8, CouponController_3, NotificationController_4, AnalyticsController_0, ReviewController_5, WorkflowController_2, LedgerController_7, "/")
+  ) = this(errorHandler, HomeController_10, UserController_9, ProductController_1, CartController_8, CouponController_3, NotificationController_4, AnalyticsController_0, OrderController_6, ReviewController_5, WorkflowController_2, LedgerController_7, "/")
 
   def withPrefix(addPrefix: String): Routes = {
     val prefix = play.api.routing.Router.concatPrefix(addPrefix, this.prefix)
     router.RoutesPrefix.setPrefix(prefix)
-    new Routes(errorHandler, HomeController_10, UserController_9, OrderController_6, ProductController_1, CartController_8, CouponController_3, NotificationController_4, AnalyticsController_0, ReviewController_5, WorkflowController_2, LedgerController_7, prefix)
+    new Routes(errorHandler, HomeController_10, UserController_9, ProductController_1, CartController_8, CouponController_3, NotificationController_4, AnalyticsController_0, OrderController_6, ReviewController_5, WorkflowController_2, LedgerController_7, prefix)
   }
 
   private val defaultPrefix: String = {
@@ -77,8 +77,6 @@ class Routes(
     ("""GET""", this.prefix, """controllers.HomeController.index()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """users""", """users.UserController.showForm()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """users""", """users.UserController.saveUser()"""),
-    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """orders""", """orders.OrderController.showForm()"""),
-    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """orders""", """orders.OrderController.placeOrder()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """products""", """products.ProductController.showForm()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """products""", """products.ProductController.addProduct()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """cart""", """cart.CartController.showCart()"""),
@@ -88,6 +86,8 @@ class Routes(
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """notifications""", """notifications.NotificationController.showForm()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """notifications""", """notifications.NotificationController.sendNotification()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """analytics""", """analytics.AnalyticsController.dashboard()"""),
+    ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """orders""", """orders.OrderController.showForm()"""),
+    ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """orders""", """orders.OrderController.placeOrder()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """reviews""", """reviews.ReviewController.showForm()"""),
     ("""POST""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """reviews""", """reviews.ReviewController.addReview()"""),
     ("""GET""", this.prefix + (if(this.prefix.endsWith("/")) "" else "/") + """workflow""", """workflow.WorkflowController.showBoard()"""),
@@ -133,7 +133,7 @@ class Routes(
       Nil,
       "GET",
       this.prefix + """users""",
-      """ Existing Modules""",
+      """ Core Concepts""",
       Seq()
     )
   )
@@ -157,46 +157,10 @@ class Routes(
   )
 
   // @LINE:7
-  private lazy val orders_OrderController_showForm3_route = Route("GET",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("orders")))
-  )
-  private lazy val orders_OrderController_showForm3_invoker = createInvoker(
-    OrderController_6.showForm(),
-    play.api.routing.HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "orders.OrderController",
-      "showForm",
-      Nil,
-      "GET",
-      this.prefix + """orders""",
-      """""",
-      Seq()
-    )
-  )
-
-  // @LINE:8
-  private lazy val orders_OrderController_placeOrder4_route = Route("POST",
-    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("orders")))
-  )
-  private lazy val orders_OrderController_placeOrder4_invoker = createInvoker(
-    OrderController_6.placeOrder(),
-    play.api.routing.HandlerDef(this.getClass.getClassLoader,
-      "router",
-      "orders.OrderController",
-      "placeOrder",
-      Nil,
-      "POST",
-      this.prefix + """orders""",
-      """""",
-      Seq()
-    )
-  )
-
-  // @LINE:11
-  private lazy val products_ProductController_showForm5_route = Route("GET",
+  private lazy val products_ProductController_showForm3_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("products")))
   )
-  private lazy val products_ProductController_showForm5_invoker = createInvoker(
+  private lazy val products_ProductController_showForm3_invoker = createInvoker(
     ProductController_1.showForm(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -205,16 +169,16 @@ class Routes(
       Nil,
       "GET",
       this.prefix + """products""",
-      """ Core Concepts""",
+      """""",
       Seq()
     )
   )
 
-  // @LINE:12
-  private lazy val products_ProductController_addProduct6_route = Route("POST",
+  // @LINE:8
+  private lazy val products_ProductController_addProduct4_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("products")))
   )
-  private lazy val products_ProductController_addProduct6_invoker = createInvoker(
+  private lazy val products_ProductController_addProduct4_invoker = createInvoker(
     ProductController_1.addProduct(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -228,11 +192,11 @@ class Routes(
     )
   )
 
-  // @LINE:13
-  private lazy val cart_CartController_showCart7_route = Route("GET",
+  // @LINE:9
+  private lazy val cart_CartController_showCart5_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("cart")))
   )
-  private lazy val cart_CartController_showCart7_invoker = createInvoker(
+  private lazy val cart_CartController_showCart5_invoker = createInvoker(
     CartController_8.showCart(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -246,11 +210,11 @@ class Routes(
     )
   )
 
-  // @LINE:14
-  private lazy val cart_CartController_addItem8_route = Route("POST",
+  // @LINE:10
+  private lazy val cart_CartController_addItem6_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("cart")))
   )
-  private lazy val cart_CartController_addItem8_invoker = createInvoker(
+  private lazy val cart_CartController_addItem6_invoker = createInvoker(
     CartController_8.addItem(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -264,11 +228,11 @@ class Routes(
     )
   )
 
-  // @LINE:15
-  private lazy val coupons_CouponController_showForm9_route = Route("GET",
+  // @LINE:11
+  private lazy val coupons_CouponController_showForm7_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coupons")))
   )
-  private lazy val coupons_CouponController_showForm9_invoker = createInvoker(
+  private lazy val coupons_CouponController_showForm7_invoker = createInvoker(
     CouponController_3.showForm(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -282,11 +246,11 @@ class Routes(
     )
   )
 
-  // @LINE:16
-  private lazy val coupons_CouponController_validateCoupon10_route = Route("POST",
+  // @LINE:12
+  private lazy val coupons_CouponController_validateCoupon8_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("coupons")))
   )
-  private lazy val coupons_CouponController_validateCoupon10_invoker = createInvoker(
+  private lazy val coupons_CouponController_validateCoupon8_invoker = createInvoker(
     CouponController_3.validateCoupon(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -300,11 +264,11 @@ class Routes(
     )
   )
 
-  // @LINE:17
-  private lazy val notifications_NotificationController_showForm11_route = Route("GET",
+  // @LINE:13
+  private lazy val notifications_NotificationController_showForm9_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("notifications")))
   )
-  private lazy val notifications_NotificationController_showForm11_invoker = createInvoker(
+  private lazy val notifications_NotificationController_showForm9_invoker = createInvoker(
     NotificationController_4.showForm(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -318,11 +282,11 @@ class Routes(
     )
   )
 
-  // @LINE:18
-  private lazy val notifications_NotificationController_sendNotification12_route = Route("POST",
+  // @LINE:14
+  private lazy val notifications_NotificationController_sendNotification10_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("notifications")))
   )
-  private lazy val notifications_NotificationController_sendNotification12_invoker = createInvoker(
+  private lazy val notifications_NotificationController_sendNotification10_invoker = createInvoker(
     NotificationController_4.sendNotification(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -336,11 +300,11 @@ class Routes(
     )
   )
 
-  // @LINE:19
-  private lazy val analytics_AnalyticsController_dashboard13_route = Route("GET",
+  // @LINE:15
+  private lazy val analytics_AnalyticsController_dashboard11_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("analytics")))
   )
-  private lazy val analytics_AnalyticsController_dashboard13_invoker = createInvoker(
+  private lazy val analytics_AnalyticsController_dashboard11_invoker = createInvoker(
     AnalyticsController_0.dashboard(),
     play.api.routing.HandlerDef(this.getClass.getClassLoader,
       "router",
@@ -354,7 +318,43 @@ class Routes(
     )
   )
 
-  // @LINE:22
+  // @LINE:18
+  private lazy val orders_OrderController_showForm12_route = Route("GET",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("orders")))
+  )
+  private lazy val orders_OrderController_showForm12_invoker = createInvoker(
+    OrderController_6.showForm(),
+    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "orders.OrderController",
+      "showForm",
+      Nil,
+      "GET",
+      this.prefix + """orders""",
+      """ Advanced Concepts""",
+      Seq()
+    )
+  )
+
+  // @LINE:19
+  private lazy val orders_OrderController_placeOrder13_route = Route("POST",
+    PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("orders")))
+  )
+  private lazy val orders_OrderController_placeOrder13_invoker = createInvoker(
+    OrderController_6.placeOrder(),
+    play.api.routing.HandlerDef(this.getClass.getClassLoader,
+      "router",
+      "orders.OrderController",
+      "placeOrder",
+      Nil,
+      "POST",
+      this.prefix + """orders""",
+      """""",
+      Seq()
+    )
+  )
+
+  // @LINE:20
   private lazy val reviews_ReviewController_showForm14_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("reviews")))
   )
@@ -367,12 +367,12 @@ class Routes(
       Nil,
       "GET",
       this.prefix + """reviews""",
-      """ Advanced Concepts""",
+      """""",
       Seq()
     )
   )
 
-  // @LINE:23
+  // @LINE:21
   private lazy val reviews_ReviewController_addReview15_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("reviews")))
   )
@@ -390,7 +390,7 @@ class Routes(
     )
   )
 
-  // @LINE:24
+  // @LINE:22
   private lazy val workflow_WorkflowController_showBoard16_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("workflow")))
   )
@@ -408,7 +408,7 @@ class Routes(
     )
   )
 
-  // @LINE:25
+  // @LINE:23
   private lazy val workflow_WorkflowController_createOrder17_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("workflow")))
   )
@@ -426,7 +426,7 @@ class Routes(
     )
   )
 
-  // @LINE:26
+  // @LINE:24
   private lazy val workflow_WorkflowController_transition18_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("workflow/transition")))
   )
@@ -444,7 +444,7 @@ class Routes(
     )
   )
 
-  // @LINE:27
+  // @LINE:25
   private lazy val ledger_LedgerController_showLedger19_route = Route("GET",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("ledger")))
   )
@@ -462,7 +462,7 @@ class Routes(
     )
   )
 
-  // @LINE:28
+  // @LINE:26
   private lazy val ledger_LedgerController_addEntry20_route = Route("POST",
     PathPattern(List(StaticPart(this.prefix), StaticPart(this.defaultPrefix), StaticPart("ledger")))
   )
@@ -502,108 +502,108 @@ class Routes(
       }
   
     // @LINE:7
-    case orders_OrderController_showForm3_route(params@_) =>
+    case products_ProductController_showForm3_route(params@_) =>
       call { 
-        orders_OrderController_showForm3_invoker.call(OrderController_6.showForm())
+        products_ProductController_showForm3_invoker.call(ProductController_1.showForm())
       }
   
     // @LINE:8
-    case orders_OrderController_placeOrder4_route(params@_) =>
+    case products_ProductController_addProduct4_route(params@_) =>
       call { 
-        orders_OrderController_placeOrder4_invoker.call(OrderController_6.placeOrder())
+        products_ProductController_addProduct4_invoker.call(ProductController_1.addProduct())
+      }
+  
+    // @LINE:9
+    case cart_CartController_showCart5_route(params@_) =>
+      call { 
+        cart_CartController_showCart5_invoker.call(CartController_8.showCart())
+      }
+  
+    // @LINE:10
+    case cart_CartController_addItem6_route(params@_) =>
+      call { 
+        cart_CartController_addItem6_invoker.call(CartController_8.addItem())
       }
   
     // @LINE:11
-    case products_ProductController_showForm5_route(params@_) =>
+    case coupons_CouponController_showForm7_route(params@_) =>
       call { 
-        products_ProductController_showForm5_invoker.call(ProductController_1.showForm())
+        coupons_CouponController_showForm7_invoker.call(CouponController_3.showForm())
       }
   
     // @LINE:12
-    case products_ProductController_addProduct6_route(params@_) =>
+    case coupons_CouponController_validateCoupon8_route(params@_) =>
       call { 
-        products_ProductController_addProduct6_invoker.call(ProductController_1.addProduct())
+        coupons_CouponController_validateCoupon8_invoker.call(CouponController_3.validateCoupon())
       }
   
     // @LINE:13
-    case cart_CartController_showCart7_route(params@_) =>
+    case notifications_NotificationController_showForm9_route(params@_) =>
       call { 
-        cart_CartController_showCart7_invoker.call(CartController_8.showCart())
+        notifications_NotificationController_showForm9_invoker.call(NotificationController_4.showForm())
       }
   
     // @LINE:14
-    case cart_CartController_addItem8_route(params@_) =>
+    case notifications_NotificationController_sendNotification10_route(params@_) =>
       call { 
-        cart_CartController_addItem8_invoker.call(CartController_8.addItem())
+        notifications_NotificationController_sendNotification10_invoker.call(NotificationController_4.sendNotification())
       }
   
     // @LINE:15
-    case coupons_CouponController_showForm9_route(params@_) =>
+    case analytics_AnalyticsController_dashboard11_route(params@_) =>
       call { 
-        coupons_CouponController_showForm9_invoker.call(CouponController_3.showForm())
-      }
-  
-    // @LINE:16
-    case coupons_CouponController_validateCoupon10_route(params@_) =>
-      call { 
-        coupons_CouponController_validateCoupon10_invoker.call(CouponController_3.validateCoupon())
-      }
-  
-    // @LINE:17
-    case notifications_NotificationController_showForm11_route(params@_) =>
-      call { 
-        notifications_NotificationController_showForm11_invoker.call(NotificationController_4.showForm())
+        analytics_AnalyticsController_dashboard11_invoker.call(AnalyticsController_0.dashboard())
       }
   
     // @LINE:18
-    case notifications_NotificationController_sendNotification12_route(params@_) =>
+    case orders_OrderController_showForm12_route(params@_) =>
       call { 
-        notifications_NotificationController_sendNotification12_invoker.call(NotificationController_4.sendNotification())
+        orders_OrderController_showForm12_invoker.call(OrderController_6.showForm())
       }
   
     // @LINE:19
-    case analytics_AnalyticsController_dashboard13_route(params@_) =>
+    case orders_OrderController_placeOrder13_route(params@_) =>
       call { 
-        analytics_AnalyticsController_dashboard13_invoker.call(AnalyticsController_0.dashboard())
+        orders_OrderController_placeOrder13_invoker.call(OrderController_6.placeOrder())
       }
   
-    // @LINE:22
+    // @LINE:20
     case reviews_ReviewController_showForm14_route(params@_) =>
       call { 
         reviews_ReviewController_showForm14_invoker.call(ReviewController_5.showForm())
       }
   
-    // @LINE:23
+    // @LINE:21
     case reviews_ReviewController_addReview15_route(params@_) =>
       call { 
         reviews_ReviewController_addReview15_invoker.call(ReviewController_5.addReview())
       }
   
-    // @LINE:24
+    // @LINE:22
     case workflow_WorkflowController_showBoard16_route(params@_) =>
       call { 
         workflow_WorkflowController_showBoard16_invoker.call(WorkflowController_2.showBoard())
       }
   
-    // @LINE:25
+    // @LINE:23
     case workflow_WorkflowController_createOrder17_route(params@_) =>
       call { 
         workflow_WorkflowController_createOrder17_invoker.call(WorkflowController_2.createOrder())
       }
   
-    // @LINE:26
+    // @LINE:24
     case workflow_WorkflowController_transition18_route(params@_) =>
       call { 
         workflow_WorkflowController_transition18_invoker.call(WorkflowController_2.transition())
       }
   
-    // @LINE:27
+    // @LINE:25
     case ledger_LedgerController_showLedger19_route(params@_) =>
       call { 
         ledger_LedgerController_showLedger19_invoker.call(LedgerController_7.showLedger())
       }
   
-    // @LINE:28
+    // @LINE:26
     case ledger_LedgerController_addEntry20_route(params@_) =>
       call { 
         ledger_LedgerController_addEntry20_invoker.call(LedgerController_7.addEntry())

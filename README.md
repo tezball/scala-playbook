@@ -35,17 +35,11 @@ sbt run
 
 ## What's Inside
 
-### Existing Modules
-
-| Module | Route | What it demonstrates |
-|--------|-------|----------------------|
-| **Users** | `/users` | Play Forms, Slick ORM, Kafka Producer/Consumer |
-| **Orders** | `/orders` | Play Forms, Slick ORM, Kafka Producer/Consumer |
-
 ### Core Concepts
 
 | Module | Route | Scala Concepts |
 |--------|-------|----------------|
+| **Users** | `/users` | Slick Table Mappings, Case Classes, Repository Pattern, Futures |
 | **Products** | `/products` | Pattern Matching, Sealed Traits, Enums, Case Classes |
 | **Cart** | `/cart` | Collection Ops: `map`, `filter`, `foldLeft`, `groupBy`, `sortBy`, `collect` |
 | **Coupons** | `/coupons` | Error Handling: `Option`, `Either`, `Try`, for-comprehensions |
@@ -56,6 +50,7 @@ sbt run
 
 | Module | Route | Scala Concepts |
 |--------|-------|----------------|
+| **Orders** | `/orders` | Kafka Producer/Consumer, Event Serialization, JSON Formats, Async Messaging |
 | **Reviews** | `/reviews` | Traits, Mixins, Type Classes (`Ordering`, custom `Show`), Givens |
 | **Workflow** | `/workflow` | ADTs, State Machines, Exhaustive Matching, `copy` |
 | **Ledger** | `/ledger` | Event Sourcing, `foldLeft`, `scanLeft`, Immutability |

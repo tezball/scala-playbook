@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:19
+// @LINE:15
 package analytics.javascript {
 
-  // @LINE:19
+  // @LINE:15
   class ReverseAnalyticsController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package analytics.javascript {
     }
 
   
-    // @LINE:19
+    // @LINE:15
     def dashboard: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "analytics.AnalyticsController.dashboard",
       """

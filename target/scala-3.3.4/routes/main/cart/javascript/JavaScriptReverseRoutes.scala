@@ -6,10 +6,10 @@ import play.api.routing.JavaScriptReverseRoute
 
 import _root_.controllers.Assets.Asset
 
-// @LINE:13
+// @LINE:9
 package cart.javascript {
 
-  // @LINE:13
+  // @LINE:9
   class ReverseCartController(_prefix: => String) {
 
     def _defaultPrefix: String = {
@@ -17,7 +17,7 @@ package cart.javascript {
     }
 
   
-    // @LINE:13
+    // @LINE:9
     def showCart: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "cart.CartController.showCart",
       """
@@ -27,7 +27,7 @@ package cart.javascript {
       """
     )
   
-    // @LINE:14
+    // @LINE:10
     def addItem: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "cart.CartController.addItem",
       """

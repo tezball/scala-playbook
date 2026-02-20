@@ -1,0 +1,109 @@
+@(form: Form[_root_.products.ProductForm], productList: Seq[_root_.products.Product])(implicit request: RequestHeader)
+
+@main("Products - Pattern Matching") {
+    <h1>Product Catalog</h1>
+
+    <div class="concept-banner">
+        <h3>Concepts: Pattern Matching, Sealed Traits, Enums, Case Classes</h3>
+        <p>Product pricing is computed using pattern matching on sealed trait discount types and enum categories. The compiler enforces exhaustive matching &mdash; every case must be handled.</p>
+        <pre><code>sealed trait Discount
+case class Percentage(percent: Double) extends Discount
+case class FixedAmount(amount: Double) extends Discount
+case class BuyOneGetOne(freeItemName: String) extends Discount
+case object NoDiscount extends Discount
+
+def applyDiscount(price: Double, discount: Discount): Double = discount match
+  case Percentage(pct)  =&gt; price * (1 - pct / 100)
+  case FixedAmount(amt) =&gt; (price - amt).max(0)
+  case BuyOneGetOne(_)  =&gt; price
+  case NoDiscount       =&gt; price
+
+def taxRate(category: Category): Double = category match
+  case Category.Food                          =&gt; 0.0
+  case Category.Books                         =&gt; 0.05
+  case Category.Clothing                      =&gt; 0.08
+  case Category.Electronics | Category.Sports =&gt; 0.10</code></pre>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+
+    <h2>Add Product</h2>
+    @helper.form(action = _root_.products.routes.ProductController.addProduct()) {
+        @helper.CSRF.formField
+
+        <div class="form-group">
+            <label for="name">Product Name</label>
+            <input type="text" id="name" name="name" value="@form("name").value.getOrElse("")" required>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option value="Electronics" @if(form("category").value.contains("Electronics")){selected}>Electronics (10% tax)</option>
+                <option value="Books" @if(form("category").value.contains("Books")){selected}>Books (5% tax)</option>
+                <option value="Clothing" @if(form("category").value.contains("Clothing")){selected}>Clothing (8% tax)</option>
+                <option value="Food" @if(form("category").value.contains("Food")){selected}>Food (0% tax)</option>
+                <option value="Sports" @if(form("category").value.contains("Sports")){selected}>Sports (10% tax)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="basePrice">Base Price ($)</label>
+            <input type="number" id="basePrice" name="basePrice" step="0.01" min="0" value="@form("basePrice").value.getOrElse("0.00")" required>
+        </div>
+
+        <div class="form-group">
+            <label for="discountType">Discount Type</label>
+            <select id="discountType" name="discountType">
+                <option value="none" @if(form("discountType").value.contains("none")){selected}>No Discount</option>
+                <option value="percentage" @if(form("discountType").value.contains("percentage")){selected}>Percentage Off</option>
+                <option value="fixed" @if(form("discountType").value.contains("fixed")){selected}>Fixed Amount Off</option>
+                <option value="bogo" @if(form("discountType").value.contains("bogo")){selected}>Buy One Get One</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="discountValue">Discount Value (% or $ amount, 0 for BOGO/None)</label>
+            <input type="number" id="discountValue" name="discountValue" step="0.01" min="0" value="@form("discountValue").value.getOrElse("0")" required>
+        </div>
+
+        <button type="submit">Add Product</button>
+    }
+
+    <h2>Products</h2>
+    @if(productList.isEmpty) {
+        <p>No products yet. Add one above!</p>
+    } else {
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Base Price</th>
+                    <th>Discount</th>
+                    <th>Final Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for(product <- productList) {
+                    <tr>
+                        <td>@product.id</td>
+                        <td>@product.name</td>
+                        <td>@product.category</td>
+                        <td>$@{f"${product.basePrice}%.2f"}</td>
+                        <td>@{product.discountType match {
+                            case "percentage" => s"${product.discountValue}% off"
+                            case "fixed" => s"$$${product.discountValue} off"
+                            case "bogo" => "Buy One Get One"
+                            case _ => "None"
+                        }}</td>
+                        <td><strong>$@{f"${product.finalPrice}%.2f"}</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

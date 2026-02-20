@@ -1,0 +1,108 @@
+@(form: Form[_root_.workflow.WorkflowOrderForm], orders: Seq[(_root_.workflow.WorkflowOrder, _root_.workflow.OrderStatus, List[String], String)], error: Option[String])(implicit request: RequestHeader)
+
+@main("Workflow - ADTs + State Machines") {
+    <h1>Order Workflow</h1>
+
+    <div class="concept-banner">
+        <h3>Advanced Concepts: ADTs (Algebraic Data Types), State Machines, Exhaustive Matching, copy</h3>
+        <p>Each order has a typed state from a sealed trait ADT. The compiler enforces that every state is handled in pattern matches. Transitions are validated &mdash; you can only move to legal next states.</p>
+        <pre><code>// ADT for order states - each state carries different data
+sealed trait OrderStatus
+case object Pending extends OrderStatus
+case class Approved(approvedBy: String, approvedAt: Instant) extends OrderStatus
+case class Shipped(trackingNumber: String, carrier: String) extends OrderStatus
+case class Delivered(deliveredAt: Instant, signature: String) extends OrderStatus
+case class Cancelled(reason: String, cancelledAt: Instant) extends OrderStatus
+
+// State machine - exhaustive matching
+def nextActions(status: OrderStatus): List[String] = status match
+  case Pending        =&gt; List("approve", "cancel")
+  case Approved(_, _) =&gt; List("ship", "cancel")
+  case Shipped(_, _)  =&gt; List("deliver", "cancel")
+  case Delivered(_, _) =&gt; List()  // terminal
+  case Cancelled(_, _) =&gt; List()  // terminal</code></pre>
+    </div>
+
+    <div style="background:#f5f5f5; padding:12px; border-radius:4px; margin-bottom:20px; text-align:center">
+        <strong>State Flow:</strong>
+        Pending &rarr; Approved &rarr; Shipped &rarr; Delivered
+        <br>
+        <span style="color:#999">(any non-terminal state can also &rarr; Cancelled)</span>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+    @error.map { message =>
+        <div style="background:#f2dede; color:#a94442; padding:10px; border-radius:4px; margin-bottom:16px">@message</div>
+    }
+    @request.flash.get("error").map { message =>
+        <div style="background:#f2dede; color:#a94442; padding:10px; border-radius:4px; margin-bottom:16px">@message</div>
+    }
+
+    <h2>Create New Order</h2>
+    @helper.form(action = _root_.workflow.routes.WorkflowController.createOrder()) {
+        @helper.CSRF.formField
+        <div class="inline-form">
+            <div class="form-group">
+                <label for="description">Item Description</label>
+                <input type="text" id="description" name="description" placeholder="e.g. Laptop Stand" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Create Order</button>
+            </div>
+        </div>
+    }
+
+    <h2>Orders</h2>
+    @if(orders.isEmpty) {
+        <p>No workflow orders yet. Create one above!</p>
+    } else {
+        @for((order, status, actions, detail) <- orders) {
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:start">
+                    <div>
+                        <h3>#@order.id - @order.description</h3>
+                        <p>
+                            <strong>Status:</strong>
+                            <span style="background:@{_root_.workflow.WorkflowEngine.statusName(status) match {
+                                case "Pending" => "#FFF3E0"
+                                case "Approved" => "#E8F5E9"
+                                case "Shipped" => "#E3F2FD"
+                                case "Delivered" => "#E8F5E9"
+                                case "Cancelled" => "#FFEBEE"
+                                case _ => "#f5f5f5"
+                            }}; padding:2px 8px; border-radius:3px">
+                                @{_root_.workflow.WorkflowEngine.statusName(status)}
+                            </span>
+                            @if(detail.nonEmpty) {
+                                <br><span style="color:#999; font-size:0.85em">@detail</span>
+                            }
+                        </p>
+                    </div>
+                    <div>
+                        @if(actions.nonEmpty) {
+                            @for(action <- actions) {
+                                @helper.form(action = _root_.workflow.routes.WorkflowController.transition(), Symbol("style") -> "display:inline-block; margin:2px") {
+                                    @helper.CSRF.formField
+                                    <input type="hidden" name="orderId" value="@order.id">
+                                    <input type="hidden" name="action" value="@action">
+                                    <input type="hidden" name="data" value="@{action match {
+                                        case "approve" => "by=admin"
+                                        case "ship" => "tracking=TRK-" + order.id + ",carrier=FedEx"
+                                        case "deliver" => "signature=John Doe"
+                                        case "cancel" => "reason=Customer request"
+                                        case _ => ""
+                                    }}">
+                                    <button type="submit" class="btn-sm @{if(action == "cancel") "btn-red" else "btn-blue"}">@action</button>
+                                }
+                            }
+                        } else {
+                            <span style="color:#999">Terminal state</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

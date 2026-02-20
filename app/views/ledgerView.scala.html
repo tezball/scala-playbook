@@ -1,0 +1,128 @@
+@(form: Form[_root_.ledger.LedgerEntryForm], running: Seq[(_root_.ledger.LedgerEntry, Double)], byType: Map[String, Double], balance: Double, credits: Double, debits: Double, txCount: Int, accounts: Seq[String], currentAccount: String)(implicit request: RequestHeader)
+
+@main("Ledger - Event Sourcing") {
+    <h1>Financial Ledger</h1>
+
+    <div class="concept-banner">
+        <h3>Advanced Concepts: Event Sourcing, foldLeft, scanLeft, Immutability, groupMapReduce</h3>
+        <p>Entries are append-only (immutable history). The current balance is derived by folding over the entire transaction history. Running balances use <code>scanLeft</code>. No entry is ever edited or deleted.</p>
+        <pre><code>// Event sourcing: current state derived from folding over history
+def computeBalance(entries: Seq[LedgerEntry]): Double =
+  entries.foldLeft(0.0) { (balance, entry) =&gt;
+    entry.txType match
+      case Credit | Refund =&gt; balance + entry.amount
+      case Debit | Fee     =&gt; balance - entry.amount
+  }
+
+// Running balance at each point (scanLeft)
+def runningBalances(entries: Seq[LedgerEntry]): Seq[(LedgerEntry, Double)] =
+  entries.scanLeft((null, 0.0)) { case ((_, bal), entry) =&gt;
+    entry.txType match
+      case Credit | Refund =&gt; (entry, bal + entry.amount)
+      case Debit | Fee     =&gt; (entry, bal - entry.amount)
+  }.tail
+
+// Grouping transactions
+def summaryByType(entries: Seq[LedgerEntry]): Map[String, Double] =
+  entries.groupMapReduce(_.txType)(_.amount)(_ + _)</code></pre>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+
+    <h2>Add Transaction (append-only)</h2>
+    @helper.form(action = _root_.ledger.routes.LedgerController.addEntry()) {
+        @helper.CSRF.formField
+        <div class="inline-form">
+            <div class="form-group">
+                <label for="accountName">Account</label>
+                <input type="text" id="accountName" name="accountName" value="@form("accountName").value.getOrElse("Main Account")" required>
+            </div>
+            <div class="form-group">
+                <label for="txType">Type</label>
+                <select id="txType" name="txType">
+                    <option value="Credit" @if(form("txType").value.contains("Credit")){selected}>Credit</option>
+                    <option value="Debit" @if(form("txType").value.contains("Debit")){selected}>Debit</option>
+                    <option value="Refund" @if(form("txType").value.contains("Refund")){selected}>Refund</option>
+                    <option value="Fee" @if(form("txType").value.contains("Fee")){selected}>Fee</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount ($)</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0.01" value="@form("amount").value.getOrElse("")" required style="width:120px">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" value="@form("description").value.getOrElse("")" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-blue">Add Entry</button>
+            </div>
+        </div>
+    }
+
+    @if(accounts.nonEmpty) {
+        <h2>Filter by Account</h2>
+        <p>
+            <a href="@_root_.ledger.routes.LedgerController.showLedger()" @if(currentAccount.isEmpty){ style="font-weight:bold" }>All</a>
+            @for(acc <- accounts) {
+                | <a href="?account=@acc" @if(currentAccount == acc){ style="font-weight:bold" }>@acc</a>
+            }
+        </p>
+    }
+
+    <div class="cards">
+        <div class="card">
+            <h3>Current Balance (<code>foldLeft</code>)</h3>
+            <p style="font-size:1.8em; color:@{if(balance >= 0) "#4CAF50" else "#f44336"}"><strong>$@{f"${balance}%.2f"}</strong></p>
+        </div>
+        <div class="card">
+            <h3>Total Credits</h3>
+            <p style="font-size:1.3em; color:#4CAF50"><strong>$@{f"${credits}%.2f"}</strong></p>
+        </div>
+        <div class="card">
+            <h3>Total Debits</h3>
+            <p style="font-size:1.3em; color:#f44336"><strong>$@{f"${debits}%.2f"}</strong></p>
+        </div>
+        <div class="card">
+            <h3>Transaction Count</h3>
+            <p style="font-size:1.3em"><strong>@txCount</strong></p>
+        </div>
+    </div>
+
+    @if(byType.nonEmpty) {
+        <h2>By Type (<code>groupMapReduce</code>)</h2>
+        <table>
+            <thead><tr><th>Type</th><th>Total</th></tr></thead>
+            <tbody>
+                @for((txType, total) <- byType.toSeq.sortBy(_._1)) {
+                    <tr><td>@txType</td><td>$@{f"${total}%.2f"}</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h2>Transaction History with Running Balance (<code>scanLeft</code>)</h2>
+    @if(running.isEmpty) {
+        <p>No transactions yet. Add one above!</p>
+    } else {
+        <table>
+            <thead><tr><th>ID</th><th>Account</th><th>Type</th><th>Amount</th><th>Description</th><th>Running Balance</th></tr></thead>
+            <tbody>
+                @for((entry, bal) <- running) {
+                    <tr>
+                        <td>@entry.id</td>
+                        <td>@entry.accountName</td>
+                        <td>@entry.txType</td>
+                        <td style="color:@{if(entry.txType == "Credit" || entry.txType == "Refund") "#4CAF50" else "#f44336"}">
+                            @{if(entry.txType == "Credit" || entry.txType == "Refund") "+" else "-"}$@{f"${entry.amount}%.2f"}
+                        </td>
+                        <td>@entry.description</td>
+                        <td style="font-weight:bold; color:@{if(bal >= 0) "#4CAF50" else "#f44336"}">$@{f"${bal}%.2f"}</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

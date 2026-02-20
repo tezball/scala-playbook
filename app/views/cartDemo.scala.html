@@ -1,0 +1,141 @@
+@(form: Form[_root_.cart.CartItemForm], items: Seq[_root_.cart.CartItem])(implicit request: RequestHeader)
+
+@main("Cart - Collection Operations") {
+    <h1>Shopping Cart</h1>
+
+    <div class="concept-banner">
+        <h3>Concepts: Collection Operations &mdash; map, filter, foldLeft, groupBy, sortBy, collect</h3>
+        <p>All cart calculations are performed using Scala collection methods. Each result below shows which method produced it.</p>
+        <pre><code>// foldLeft - grand total
+items.foldLeft(0.0)((total, item) =&gt; total + item.unitPrice * item.quantity)
+
+// groupBy + map - subtotals by category
+items.groupBy(_.category).map((cat, items) =&gt;
+  cat -&gt; items.map(i =&gt; i.unitPrice * i.quantity).sum)
+
+// filter - expensive items
+items.filter(_.unitPrice &gt; 20.0)
+
+// sortBy - sort by price descending
+items.sortBy(-_.unitPrice)
+
+// collect - free shipping eligible (line total &gt; $50)
+items.collect { case i if i.unitPrice * i.quantity &gt; 50 =&gt; i.name }</code></pre>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+
+    <h2>Add Item to Cart</h2>
+    @helper.form(action = _root_.cart.routes.CartController.addItem()) {
+        @helper.CSRF.formField
+        <div class="inline-form">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="@form("name").value.getOrElse("")" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="Electronics">Electronics</option>
+                    <option value="Books">Books</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Food">Food</option>
+                    <option value="Sports">Sports</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="unitPrice">Price ($)</label>
+                <input type="number" id="unitPrice" name="unitPrice" step="0.01" min="0" value="@form("unitPrice").value.getOrElse("0.00")" required style="width:100px">
+            </div>
+            <div class="form-group">
+                <label for="quantity">Qty</label>
+                <input type="number" id="quantity" name="quantity" min="1" value="@form("quantity").value.getOrElse("1")" required style="width:70px">
+            </div>
+            <div class="form-group">
+                <button type="submit">Add</button>
+            </div>
+        </div>
+    }
+
+    <h2>Cart Items (<code>map</code> &mdash; line totals)</h2>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Category</th><th>Unit Price</th><th>Qty</th><th>Line Total</th></tr>
+        </thead>
+        <tbody>
+            @for((item, lineTotal) <- _root_.cart.CartCalculator.lineTotals(items)) {
+                <tr>
+                    <td>@item.name</td>
+                    <td>@item.category</td>
+                    <td>$@{f"${item.unitPrice}%.2f"}</td>
+                    <td>@item.quantity</td>
+                    <td><strong>$@{f"${lineTotal}%.2f"}</strong></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h2>Collection Operations Results</h2>
+
+    <div class="cards">
+        <div class="card">
+            <h3><code>foldLeft</code> &mdash; Grand Total</h3>
+            <p style="font-size:1.5em"><strong>$@{f"${_root_.cart.CartCalculator.grandTotal(items)}%.2f"}</strong></p>
+        </div>
+        <div class="card">
+            <h3><code>distinctBy</code> &mdash; Unique Categories</h3>
+            <p>@{_root_.cart.CartCalculator.uniqueCategories(items).mkString(", ")}</p>
+        </div>
+    </div>
+
+    <h3><code>groupBy</code> &mdash; Subtotals by Category</h3>
+    <table>
+        <thead><tr><th>Category</th><th>Subtotal</th></tr></thead>
+        <tbody>
+            @for((cat, subtotal) <- _root_.cart.CartCalculator.subtotalsByCategory(items).toSeq.sortBy(_._1)) {
+                <tr><td>@cat</td><td><strong>$@{f"${subtotal}%.2f"}</strong></td></tr>
+            }
+        </tbody>
+    </table>
+
+    <h3><code>filter</code> &mdash; Expensive Items (unit price &gt; $20)</h3>
+    @defining(_root_.cart.CartCalculator.expensiveItems(items)) { expensive =>
+        @if(expensive.isEmpty) {
+            <p>No items over $20.</p>
+        } else {
+            <table>
+                <thead><tr><th>Name</th><th>Unit Price</th></tr></thead>
+                <tbody>
+                    @for(item <- expensive) {
+                        <tr><td>@item.name</td><td>$@{f"${item.unitPrice}%.2f"}</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+    <h3><code>sortBy</code> &mdash; Sorted by Price (descending)</h3>
+    <table>
+        <thead><tr><th>Name</th><th>Unit Price</th><th>Category</th></tr></thead>
+        <tbody>
+            @for(item <- _root_.cart.CartCalculator.sortedByPrice(items)) {
+                <tr><td>@item.name</td><td>$@{f"${item.unitPrice}%.2f"}</td><td>@item.category</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <h3><code>collect</code> &mdash; Free Shipping Eligible (line total &gt; $50)</h3>
+    @defining(_root_.cart.CartCalculator.freeShippingEligible(items)) { eligible =>
+        @if(eligible.isEmpty) {
+            <p>No items qualify for free shipping.</p>
+        } else {
+            <ul>
+                @for(name <- eligible) {
+                    <li>@name</li>
+                }
+            </ul>
+        }
+    }
+}

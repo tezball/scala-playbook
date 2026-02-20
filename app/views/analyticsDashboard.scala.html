@@ -1,0 +1,72 @@
+@(data: _root_.analytics.DashboardData)
+
+@main("Analytics - Concurrency") {
+    <h1>Analytics Dashboard</h1>
+
+    <div class="concept-banner">
+        <h3>Concepts: Concurrency &mdash; Future, parallel composition, for-comprehension, recover</h3>
+        <p>All dashboard queries run in parallel using <code>Future</code>. Starting each future before the for-comprehension means they execute concurrently, not sequentially.</p>
+        <pre><code>// Start all futures before combining (runs in parallel)
+val userCountF: Future[Int] = userRepository.count()
+val orderCountF: Future[Int] = orderRepository.count()
+val topItemsF: Future[Seq[(String, Int)]] = orderRepository.topItems(5)
+val recentOrdersF: Future[Seq[Order]] = orderRepository.recent(10)
+
+// Compose with for-comprehension
+val dashboard = for
+  userCount    &lt;- userCountF
+  orderCount   &lt;- orderCountF
+  topItems     &lt;- topItemsF
+  recentOrders &lt;- recentOrdersF
+yield DashboardData(userCount, orderCount, topItems, recentOrders)
+
+// recover - graceful fallback
+dashboard.recover { case _: Exception =&gt; DashboardData.empty }</code></pre>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Users</h3>
+            <p style="font-size:2em"><strong>@data.userCount</strong></p>
+            <p><code>userRepository.count()</code></p>
+        </div>
+        <div class="card">
+            <h3>Total Orders</h3>
+            <p style="font-size:2em"><strong>@data.orderCount</strong></p>
+            <p><code>orderRepository.count()</code></p>
+        </div>
+    </div>
+
+    <h2>Top 5 Most Ordered Items (<code>topItems</code>)</h2>
+    @if(data.topItems.isEmpty) {
+        <p>No orders yet. <a href="@_root_.orders.routes.OrderController.showForm()">Place some orders</a> first!</p>
+    } else {
+        <table>
+            <thead><tr><th>Item</th><th>Total Quantity</th></tr></thead>
+            <tbody>
+                @for((item, qty) <- data.topItems) {
+                    <tr><td>@item</td><td>@qty</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h2>Recent 10 Orders (<code>recent</code>)</h2>
+    @if(data.recentOrders.isEmpty) {
+        <p>No orders yet. <a href="@_root_.orders.routes.OrderController.showForm()">Place some orders</a> first!</p>
+    } else {
+        <table>
+            <thead><tr><th>ID</th><th>User</th><th>Item</th><th>Qty</th></tr></thead>
+            <tbody>
+                @for(order <- data.recentOrders) {
+                    <tr>
+                        <td>@order.id</td>
+                        <td>@order.userName</td>
+                        <td>@order.itemName</td>
+                        <td>@order.quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

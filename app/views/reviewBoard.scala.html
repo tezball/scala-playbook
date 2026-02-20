@@ -1,0 +1,107 @@
+@(form: Form[_root_.reviews.ReviewForm], reviewList: Seq[_root_.reviews.Review], showOutput: Seq[String], currentSort: String)(implicit request: RequestHeader)
+
+@main("Reviews - Traits + Type Classes") {
+    <h1>Product Reviews</h1>
+
+    <div class="concept-banner">
+        <h3>Advanced Concepts: Traits, Mixins, Type Classes (Ordering, Show), Givens</h3>
+        <p>Reviews mix in <code>Timestamped</code>, <code>Rateable</code>, and <code>Authorable</code> traits. Sorting uses <code>given Ordering[Review]</code> instances, and rendering uses a custom <code>Show</code> type class.</p>
+        <pre><code>// Composable traits
+trait Timestamped:
+  def createdAt: Instant
+trait Rateable:
+  def rating: Int
+  def stars: String = "\u2605" * rating + "\u2606" * (5 - rating)
+trait Authorable:
+  def author: String
+
+// Case class mixing in multiple traits
+case class Review(...) extends Timestamped, Rateable, Authorable
+
+// Custom Ordering instances (given = type class instances)
+given byRating: Ordering[Review] = Ordering.by(-_.rating)
+given byDate: Ordering[Review] = Ordering.by(_.createdAt)
+
+// Custom type class: Show
+trait Show[A]:
+  def show(a: A): String
+given Show[Review] with
+  def show(r: Review) = s"${r.stars} by ${r.author}: ${r.comment}"
+
+def display[A](items: Seq[A])(using s: Show[A]): Seq[String] =
+  items.map(s.show)</code></pre>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+
+    <h2>Write a Review</h2>
+    @helper.form(action = _root_.reviews.routes.ReviewController.addReview()) {
+        @helper.CSRF.formField
+
+        <div class="form-group">
+            <label for="productName">Product Name</label>
+            <input type="text" id="productName" name="productName" value="@form("productName").value.getOrElse("")" required>
+        </div>
+
+        <div class="form-group">
+            <label for="author">Your Name</label>
+            <input type="text" id="author" name="author" value="@form("author").value.getOrElse("")" required>
+        </div>
+
+        <div class="form-group">
+            <label for="rating">Rating (1-5)</label>
+            <select id="rating" name="rating">
+                @for(i <- 5 to 1 by -1) {
+                    <option value="@i" @if(form("rating").value.contains(i.toString)){selected}>@i - @{"\u2605" * i + "\u2606" * (5 - i)}</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="comment">Comment</label>
+            <textarea id="comment" name="comment" rows="2" required>@form("comment").value.getOrElse("")</textarea>
+        </div>
+
+        <button type="submit" class="btn-orange">Submit Review</button>
+    }
+
+    <h2>Reviews (sorted by <code>given Ordering</code>)</h2>
+    <p>
+        Sort by:
+        <a href="?sort=rating" @if(currentSort == "rating"){ style="font-weight:bold" }>Rating</a> |
+        <a href="?sort=date" @if(currentSort == "date"){ style="font-weight:bold" }>Date</a> |
+        <a href="?sort=author" @if(currentSort == "author"){ style="font-weight:bold" }>Author</a>
+    </p>
+
+    @if(reviewList.isEmpty) {
+        <p>No reviews yet. Be the first!</p>
+    } else {
+        <table>
+            <thead><tr><th>Stars</th><th>Product</th><th>Author</th><th>Comment</th><th>Date</th></tr></thead>
+            <tbody>
+                @for(review <- reviewList) {
+                    <tr>
+                        <td>@review.stars</td>
+                        <td>@review.productName</td>
+                        <td>@review.author</td>
+                        <td>@review.comment</td>
+                        <td>@review.createdAt</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h2><code>Show[Review]</code> Type Class Output</h2>
+    @if(showOutput.isEmpty) {
+        <p>No reviews to display.</p>
+    } else {
+        <ul>
+            @for(line <- showOutput) {
+                <li><code>@line</code></li>
+            }
+        </ul>
+    }
+}

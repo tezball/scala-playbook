@@ -1,0 +1,83 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@title - Scala Playbook</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; margin: 0; padding: 0; color: #333; }
+        .top-nav { background: #263238; padding: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: center; }
+        .top-nav .brand { color: #fff; font-weight: bold; font-size: 1.1em; padding: 12px 20px; text-decoration: none; }
+        .top-nav .brand:hover { background: #37474F; }
+        .nav-section { display: flex; align-items: center; }
+        .nav-section .nav-label { color: #78909C; font-size: 0.75em; text-transform: uppercase; padding: 0 8px 0 16px; letter-spacing: 0.5px; }
+        .nav-section a { color: #B0BEC5; text-decoration: none; padding: 12px 12px; font-size: 0.9em; transition: background 0.15s; }
+        .nav-section a:hover { background: #37474F; color: #fff; }
+        .nav-divider { width: 1px; height: 24px; background: #455A64; margin: 0 4px; }
+        .page-content { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+        h1, h2 { color: #333; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea {
+            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.95em;
+        }
+        textarea { resize: vertical; }
+        button, .btn { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.95em; }
+        button:hover, .btn:hover { opacity: 0.9; }
+        .btn-blue { background: #2196F3; }
+        .btn-orange { background: #FF9800; }
+        .btn-red { background: #f44336; }
+        .btn-sm { padding: 5px 12px; font-size: 0.85em; }
+        .success { background: #dff0d8; color: #3c763d; padding: 10px; border-radius: 4px; margin-bottom: 16px; }
+        .error-msg { color: #a94442; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; }
+        .concept-banner { background: #E3F2FD; border-left: 4px solid #2196F3; padding: 16px; margin-bottom: 24px; border-radius: 0 4px 4px 0; }
+        .concept-banner h3 { margin: 0 0 8px 0; color: #1565C0; }
+        .concept-banner pre { background: #263238; color: #EEFFFF; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; margin: 8px 0 0 0; }
+        .concept-banner code { font-family: 'Courier New', monospace; }
+        .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+        .card h3 { margin-top: 0; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .step { border-left: 3px solid #2196F3; padding: 8px 12px; margin-bottom: 8px; background: #FAFAFA; }
+        .step.success-step { border-left-color: #4CAF50; }
+        .step.error-step { border-left-color: #f44336; }
+        .inline-form { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; }
+        .inline-form .form-group { margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a class="brand" href="@_root_.controllers.routes.HomeController.index()">Scala Playbook</a>
+        <div class="nav-divider"></div>
+        <div class="nav-section">
+            <span class="nav-label">Existing</span>
+            <a href="@_root_.users.routes.UserController.showForm()">Users</a>
+            <a href="@_root_.orders.routes.OrderController.showForm()">Orders</a>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-section">
+            <span class="nav-label">Core</span>
+            <a href="@_root_.products.routes.ProductController.showForm()">Products</a>
+            <a href="@_root_.cart.routes.CartController.showCart()">Cart</a>
+            <a href="@_root_.coupons.routes.CouponController.showForm()">Coupons</a>
+            <a href="@_root_.notifications.routes.NotificationController.showForm()">Notifications</a>
+            <a href="@_root_.analytics.routes.AnalyticsController.dashboard()">Analytics</a>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-section">
+            <span class="nav-label">Advanced</span>
+            <a href="@_root_.reviews.routes.ReviewController.showForm()">Reviews</a>
+            <a href="@_root_.workflow.routes.WorkflowController.showBoard()">Workflow</a>
+            <a href="@_root_.ledger.routes.LedgerController.showLedger()">Ledger</a>
+        </div>
+    </nav>
+    <div class="page-content">
+        @content
+    </div>
+</body>
+</html>

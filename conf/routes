@@ -1,0 +1,28 @@
+# Home
+GET     /                       controllers.HomeController.index()
+
+# Existing Modules
+GET     /users                  users.UserController.showForm()
+POST    /users                  users.UserController.saveUser()
+GET     /orders                 orders.OrderController.showForm()
+POST    /orders                 orders.OrderController.placeOrder()
+
+# Core Concepts
+GET     /products               products.ProductController.showForm()
+POST    /products               products.ProductController.addProduct()
+GET     /cart                   cart.CartController.showCart()
+POST    /cart                   cart.CartController.addItem()
+GET     /coupons                coupons.CouponController.showForm()
+POST    /coupons                coupons.CouponController.validateCoupon()
+GET     /notifications          notifications.NotificationController.showForm()
+POST    /notifications          notifications.NotificationController.sendNotification()
+GET     /analytics              analytics.AnalyticsController.dashboard()
+
+# Advanced Concepts
+GET     /reviews                reviews.ReviewController.showForm()
+POST    /reviews                reviews.ReviewController.addReview()
+GET     /workflow                workflow.WorkflowController.showBoard()
+POST    /workflow                workflow.WorkflowController.createOrder()
+POST    /workflow/transition    workflow.WorkflowController.transition()
+GET     /ledger                 ledger.LedgerController.showLedger()
+POST    /ledger                 ledger.LedgerController.addEntry()

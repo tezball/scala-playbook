@@ -1,0 +1,88 @@
+@(form: Form[_root_.coupons.CouponForm], couponList: Seq[_root_.coupons.Coupon], result: Option[_root_.coupons.ValidationResult])(implicit request: RequestHeader)
+
+@main("Coupons - Error Handling") {
+    <h1>Coupon Validator</h1>
+
+    <div class="concept-banner">
+        <h3>Concepts: Error Handling &mdash; Option, Either, Try, for-comprehensions</h3>
+        <p>Coupon validation follows a pipeline: <strong>Try</strong> (parse input) &rarr; <strong>Option</strong> (DB lookup) &rarr; <strong>Either</strong> (business rule validation). Each step can fail differently, and Scala's types make the failure modes explicit.</p>
+        <pre><code>// Step 1: Try - parse the input (could throw)
+def parseCode(raw: String): Try[String] =
+  Try { require(raw.nonEmpty, "Code cannot be empty"); raw.trim.toUpperCase }
+
+// Step 2: Option - look up in database (may not exist)
+def findCoupon(code: String): Future[Option[Coupon]]
+
+// Step 3: Either - validate business rules
+def validateCoupon(coupon: Coupon): Either[String, Coupon] =
+  if coupon.isExpired then Left("Coupon expired")
+  else if coupon.usesRemaining &lt;= 0 then Left("No uses remaining")
+  else Right(coupon)</code></pre>
+    </div>
+
+    <h2>Known Coupon Codes</h2>
+    <p>Try these codes to see different validation outcomes:</p>
+    <table>
+        <thead>
+            <tr><th>Code</th><th>Discount</th><th>Expires</th><th>Uses Left</th><th>Min Order</th></tr>
+        </thead>
+        <tbody>
+            @for(coupon <- couponList) {
+                <tr>
+                    <td><code>@coupon.code</code></td>
+                    <td>@{coupon.discountPercent}%</td>
+                    <td>@coupon.expiresAt</td>
+                    <td>@coupon.usesRemaining</td>
+                    <td>$@{f"${coupon.minimumOrder}%.2f"}</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h2>Validate a Coupon</h2>
+    @helper.form(action = _root_.coupons.routes.CouponController.validateCoupon()) {
+        @helper.CSRF.formField
+        <div class="inline-form">
+            <div class="form-group">
+                <label for="code">Coupon Code</label>
+                <input type="text" id="code" name="code" value="@form("code").value.getOrElse("")" placeholder="e.g. SAVE10" required>
+            </div>
+            <div class="form-group">
+                <label for="orderTotal">Order Total ($)</label>
+                <input type="number" id="orderTotal" name="orderTotal" step="0.01" min="0" value="@form("orderTotal").value.getOrElse("100.00")" required style="width:120px">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-blue">Validate</button>
+            </div>
+        </div>
+    }
+
+    @result.map { res =>
+        <h2>Validation Pipeline Results</h2>
+
+        @for(step <- res.steps) {
+            <div class="step @if(step.passed){success-step}else{error-step}">
+                <strong>Step: @step.name</strong> (<code>@step.concept</code>)
+                <br>
+                @if(step.passed) {
+                    &#x2705; @step.detail
+                } else {
+                    &#x274C; @step.detail
+                }
+            </div>
+        }
+
+        <div class="card" style="margin-top:16px">
+            @res.discount match {
+                case Some(amount) => {
+                    <h3 style="color:#4CAF50">Coupon Valid!</h3>
+                    <p>Discount amount: <strong>$@{f"${amount}%.2f"}</strong></p>
+                }
+                case None => {
+                    <h3 style="color:#f44336">Coupon Invalid</h3>
+                    <p>The coupon could not be applied. See the pipeline steps above for details.</p>
+                }
+            }
+        </div>
+    }
+}

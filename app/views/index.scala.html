@@ -1,0 +1,68 @@
+@()
+
+@main("Home") {
+    <h1>Scala Playbook</h1>
+    <p>Learn Scala concepts through real-world e-commerce scenarios. Each page demonstrates specific Scala features with interactive forms and visible results.</p>
+
+    <h2>Existing Modules</h2>
+    <div class="cards">
+        <div class="card">
+            <h3><a href="@_root_.users.routes.UserController.showForm()">Users</a></h3>
+            <p>User management with PostgreSQL (Slick) and Kafka event publishing.</p>
+            <p><strong>Concepts:</strong> Play Forms, Slick ORM, Kafka Producer/Consumer</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.orders.routes.OrderController.showForm()">Orders</a></h3>
+            <p>Order placement with database persistence and Kafka checkout events.</p>
+            <p><strong>Concepts:</strong> Play Forms, Slick ORM, Kafka Producer/Consumer</p>
+        </div>
+    </div>
+
+    <h2>Core Concepts</h2>
+    <div class="cards">
+        <div class="card">
+            <h3><a href="@_root_.products.routes.ProductController.showForm()">Products</a></h3>
+            <p>Product catalog with categories and pricing rules.</p>
+            <p><strong>Concepts:</strong> Pattern Matching, Sealed Traits, Enums, Case Classes</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.cart.routes.CartController.showCart()">Cart</a></h3>
+            <p>Shopping cart with totals, discounts, and grouping.</p>
+            <p><strong>Concepts:</strong> map, filter, foldLeft, groupBy, sortBy, collect</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.coupons.routes.CouponController.showForm()">Coupons</a></h3>
+            <p>Coupon code validation pipeline.</p>
+            <p><strong>Concepts:</strong> Option, Either, Try, for-comprehensions</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.notifications.routes.NotificationController.showForm()">Notifications</a></h3>
+            <p>Message processing pipeline.</p>
+            <p><strong>Concepts:</strong> andThen, compose, pipe, tap, PartialFunction</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.analytics.routes.AnalyticsController.dashboard()">Analytics</a></h3>
+            <p>Dashboard aggregating data from users and orders.</p>
+            <p><strong>Concepts:</strong> Future, parallel composition, Future.sequence, recover</p>
+        </div>
+    </div>
+
+    <h2>Advanced Concepts</h2>
+    <div class="cards">
+        <div class="card">
+            <h3><a href="@_root_.reviews.routes.ReviewController.showForm()">Reviews</a></h3>
+            <p>Product reviews with sorting and rendering.</p>
+            <p><strong>Concepts:</strong> Traits, Mixins, Type Classes, Ordering, Givens</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.workflow.routes.WorkflowController.showBoard()">Workflow</a></h3>
+            <p>Order status state machine.</p>
+            <p><strong>Concepts:</strong> ADTs, State Machines, Exhaustive Matching, copy</p>
+        </div>
+        <div class="card">
+            <h3><a href="@_root_.ledger.routes.LedgerController.showLedger()">Ledger</a></h3>
+            <p>Financial transaction ledger.</p>
+            <p><strong>Concepts:</strong> Event Sourcing, foldLeft, scanLeft, Immutability</p>
+        </div>
+    </div>
+}

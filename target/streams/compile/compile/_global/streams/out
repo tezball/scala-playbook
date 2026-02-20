@@ -1,0 +1,46 @@
+[error] -- [E172] Type Error: /home/tezball/projects/scala-demo/app/cart/CartController.scala:30:31 
+[error] 30 |      "unitPrice" -> of[Double],
+[error]    |                               ^
+[error]    |Cannot find Formatter type class for Double. Perhaps you will need to import play.api.data.format.Formats._ 
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import play.api.data.format.Formats.doubleFormat
+[error]    |
+[error] -- [E172] Type Error: /home/tezball/projects/scala-demo/app/coupons/CouponController.scala:21:32 
+[error] 21 |      "orderTotal" -> of[Double]
+[error]    |                                ^
+[error]    |Cannot find Formatter type class for Double. Perhaps you will need to import play.api.data.format.Formats._ 
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import play.api.data.format.Formats.doubleFormat
+[error]    |
+[error] -- [E172] Type Error: /home/tezball/projects/scala-demo/app/ledger/LedgerController.scala:20:28 
+[error] 20 |      "amount" -> of[Double],
+[error]    |                            ^
+[error]    |Cannot find Formatter type class for Double. Perhaps you will need to import play.api.data.format.Formats._ 
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import play.api.data.format.Formats.doubleFormat
+[error]    |
+[error] -- [E172] Type Error: /home/tezball/projects/scala-demo/app/products/ProductController.scala:20:31 
+[error] 20 |      "basePrice" -> of[Double],
+[error]    |                               ^
+[error]    |Cannot find Formatter type class for Double. Perhaps you will need to import play.api.data.format.Formats._ 
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import play.api.data.format.Formats.doubleFormat
+[error]    |
+[error] -- [E172] Type Error: /home/tezball/projects/scala-demo/app/products/ProductController.scala:22:35 
+[error] 22 |      "discountValue" -> of[Double]
+[error]    |                                   ^
+[error]    |Cannot find Formatter type class for Double. Perhaps you will need to import play.api.data.format.Formats._ 
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import play.api.data.format.Formats.doubleFormat
+[error]    |
+[error] 5 errors found

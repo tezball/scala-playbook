@@ -1,0 +1,86 @@
+@(form: Form[_root_.notifications.NotificationForm], result: Option[(Seq[_root_.notifications.PipelineStep], String)])(implicit request: RequestHeader)
+
+@main("Notifications - Function Composition") {
+    <h1>Notification Pipeline</h1>
+
+    <div class="concept-banner">
+        <h3>Concepts: Function Composition &mdash; andThen, compose, pipe, tap, PartialFunction, Currying</h3>
+        <p>A notification passes through a pipeline of composed functions. Each stage transforms the notification, and routing uses <code>PartialFunction.orElse</code> to dispatch by channel.</p>
+        <pre><code>// Individual pipeline stages as functions
+val sanitize: Notification =&gt; Notification = n =&gt;
+  n.copy(message = n.message.replaceAll("&lt;[^&gt;]*&gt;", "").trim)
+val addTimestamp: Notification =&gt; Notification = ...
+val truncate: Notification =&gt; Notification = ...
+
+// andThen - compose left to right
+val pipeline = sanitize.andThen(addTimestamp).andThen(truncate)
+
+// PartialFunction for routing by channel
+val emailHandler: PartialFunction[Notification, String] =
+  case n if n.channel == "email" =&gt; s"Sending email to ${n.recipient}"
+val route = emailHandler.orElse(smsHandler).orElse(pushHandler)
+
+// Curried function for reusable formatters
+def formatForChannel(maxLen: Int)(prefix: String)(n: Notification): Notification = ...
+val formatForSms = formatForChannel(160)("[SMS]")</code></pre>
+    </div>
+
+    <h2>Send a Notification</h2>
+    <p>Try including HTML tags like <code>&lt;b&gt;bold&lt;/b&gt;</code> or <code>&lt;script&gt;alert('hi')&lt;/script&gt;</code> to see sanitization. Try a long message (100+ chars) to see truncation.</p>
+
+    @helper.form(action = _root_.notifications.routes.NotificationController.sendNotification()) {
+        @helper.CSRF.formField
+
+        <div class="form-group">
+            <label for="channel">Channel</label>
+            <select id="channel" name="channel">
+                <option value="email" @if(form("channel").value.contains("email")){selected}>Email</option>
+                <option value="sms" @if(form("channel").value.contains("sms")){selected}>SMS</option>
+                <option value="push" @if(form("channel").value.contains("push")){selected}>Push</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="recipient">Recipient</label>
+            <input type="text" id="recipient" name="recipient" value="@form("recipient").value.getOrElse("")" placeholder="user@@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message (try HTML tags and long text!)</label>
+            <textarea id="message" name="message" rows="3" required>@form("message").value.getOrElse("")</textarea>
+        </div>
+
+        <button type="submit" class="btn-blue">Process Notification</button>
+    }
+
+    @result.map { case (steps, routed) =>
+        <h2>Pipeline Steps</h2>
+
+        @for(step <- steps) {
+            <div class="step">
+                <strong>@step.name</strong>
+                <table style="margin-top:4px">
+                    <tr>
+                        <td style="width:60px;color:#999">Before:</td>
+                        <td><code>@step.before.message</code></td>
+                    </tr>
+                    <tr>
+                        <td style="color:#999">After:</td>
+                        <td><code>@step.after.message</code></td>
+                    </tr>
+                    @if(step.after.metadata != step.before.metadata) {
+                        <tr>
+                            <td style="color:#999">Meta:</td>
+                            <td><code>@step.after.metadata.mkString(", ")</code></td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+
+        <div class="card" style="margin-top:16px">
+            <h3>Final Output (<code>PartialFunction.orElse</code> routing)</h3>
+            <p>@routed</p>
+        </div>
+    }
+}

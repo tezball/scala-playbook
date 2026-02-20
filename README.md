@@ -1,44 +1,93 @@
-# scala-playbook
+# Scala Playbook
 
-A hello world web application built with [Play Framework](https://www.playframework.com/) and Scala 3.
+Learn Scala concepts through interactive e-commerce scenarios. Built with [Play Framework](https://www.playframework.com/) 3, Scala 3, PostgreSQL (Slick), and Kafka.
 
-## Prerequisites
+Each page is a self-contained demo with a form to interact with, visible results, and a concept banner explaining the Scala features on display.
 
-- [JDK 11+](https://adoptium.net/)
-- [sbt](https://www.scala-sbt.org/download/)
-
-### Installing sbt via Coursier
-
-A Coursier launcher (`cs`) is included in this repo. You can use it to install sbt:
+## Quick Start
 
 ```sh
-./cs setup
+./start.sh
 ```
 
-This installs JDK, sbt, and other Scala tools.
+This single script handles everything:
 
-## Running
+1. Stops any running containers (`docker compose down`)
+2. Rebuilds the app and starts all services (`docker compose up --build`)
+3. Waits for the app to be ready on port 9000
+4. Opens your browser to [http://localhost:9000](http://localhost:9000)
 
-Start the development server:
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+
+That's it. The Docker build handles JDK, sbt, and all dependencies.
+
+### Manual Run (without Docker)
+
+If you prefer running locally, you'll need JDK 11+, sbt, PostgreSQL, and Kafka:
 
 ```sh
+# Start Postgres and Kafka yourself, then:
 sbt run
 ```
 
-Then open [http://localhost:9000](http://localhost:9000) in your browser to see "Hello, World!".
+## What's Inside
 
-## Project structure
+### Existing Modules
+
+| Module | Route | What it demonstrates |
+|--------|-------|----------------------|
+| **Users** | `/users` | Play Forms, Slick ORM, Kafka Producer/Consumer |
+| **Orders** | `/orders` | Play Forms, Slick ORM, Kafka Producer/Consumer |
+
+### Core Concepts
+
+| Module | Route | Scala Concepts |
+|--------|-------|----------------|
+| **Products** | `/products` | Pattern Matching, Sealed Traits, Enums, Case Classes |
+| **Cart** | `/cart` | Collection Ops: `map`, `filter`, `foldLeft`, `groupBy`, `sortBy`, `collect` |
+| **Coupons** | `/coupons` | Error Handling: `Option`, `Either`, `Try`, for-comprehensions |
+| **Notifications** | `/notifications` | Function Composition: `andThen`, `compose`, `pipe`, PartialFunction |
+| **Analytics** | `/analytics` | Concurrency: `Future`, parallel composition, `recover` |
+
+### Advanced Concepts
+
+| Module | Route | Scala Concepts |
+|--------|-------|----------------|
+| **Reviews** | `/reviews` | Traits, Mixins, Type Classes (`Ordering`, custom `Show`), Givens |
+| **Workflow** | `/workflow` | ADTs, State Machines, Exhaustive Matching, `copy` |
+| **Ledger** | `/ledger` | Event Sourcing, `foldLeft`, `scanLeft`, Immutability |
+
+## Project Structure
 
 ```
-.
-├── app/
-│   └── controllers/
-│       └── HomeController.scala   # Application controller
-├── conf/
-│   ├── application.conf           # Play configuration
-│   └── routes                     # URL routing
-├── build.sbt                      # Build definition
-└── project/
-    ├── build.properties           # sbt version
-    └── plugins.sbt                # Play sbt plugin
+app/
+├── controllers/         # HomeController (landing page index)
+├── kafka/               # Shared Kafka producer service
+├── users/               # User module (model, repo, controller, Kafka events)
+├── orders/              # Order module (model, repo, controller, Kafka events)
+├── products/            # Products: pattern matching + enums + pricing engine
+├── cart/                # Cart: collection operations (in-memory, no DB)
+├── coupons/             # Coupons: Try/Option/Either validation pipeline
+├── notifications/       # Notifications: function composition pipeline (no DB)
+├── analytics/           # Analytics: Future-based parallel dashboard
+├── reviews/             # Reviews: traits, mixins, type classes
+├── workflow/            # Workflow: ADT state machine
+├── ledger/              # Ledger: event sourcing with foldLeft/scanLeft
+└── views/               # Twirl templates (shared layout with global nav)
+conf/
+├── application.conf     # Play + Slick + Kafka configuration
+├── routes               # All URL routes
+└── evolutions/default/  # DB migrations (1.sql through 7.sql)
 ```
+
+## Services
+
+The `docker-compose.yml` runs three services:
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **app** | 9000 | Play Framework application |
+| **db** | 5432 | PostgreSQL 16 (auto-applies evolutions on startup) |
+| **kafka** | 9092 | Apache Kafka 3.9 (KRaft mode, no Zookeeper) |

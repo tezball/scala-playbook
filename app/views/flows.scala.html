@@ -1,0 +1,631 @@
+@(users: Seq[_root_.users.User], checkout: _root_.flows.CheckoutState, recovery: _root_.flows.RecoveryState, activeTab: String)(implicit request: RequestHeader)
+
+@main("Flows") {
+    <h1>Integrated Flows</h1>
+
+    <div class="concept-banner">
+        <h3>Combining Scala Concepts: Multi-Step User Journeys</h3>
+        <p>These flows combine multiple Scala concepts from across the app into realistic multi-step processes. Each step uses specific Scala features &mdash; <strong>Futures</strong> for DB queries, <strong>Collections</strong> for cart math, <strong>Try/Option/Either</strong> for validation, <strong>Pattern Matching</strong> for control flow, <strong>Function Composition</strong> for notification pipelines, and <strong>Kafka</strong> for async messaging.</p>
+
+        <details class="code-callout">
+            <summary>Controller Orchestration &mdash; Session-Based State <span class="callout-source">FlowController.scala</span></summary>
+            <pre><code>// Session keys track flow progress across HTTP requests
+// Each step saves state to session cookies, enabling a stateless server
+
+private def checkoutStep(session: Session): Int =
+  session.get("flow-checkout-step").flatMap(_.toIntOption).getOrElse(1)
+
+private def parseCartItems(session: Session): Seq[CartItem] =
+  session.get("flow-checkout-cart").filter(_.nonEmpty).map { raw =&gt;
+    raw.split("\\|").toSeq.flatMap { entry =&gt;
+      entry.split(",", 4) match
+        case Array(name, category, price, qty) =&gt;
+          scala.util.Try(CartItem(name, category, price.toDouble, qty.toInt)).toOption
+        case _ =&gt; None
+    }
+  }.getOrElse(Seq.empty)</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Kafka Event Publishing &mdash; Checkout &amp; Recovery <span class="callout-source">FlowController.scala</span></summary>
+            <pre><code>// Publish typed events to Kafka topics for async email processing
+val event = FlowEvent("CheckoutEmail", Instant.now().toString,
+  s"Order #$orderId for ${user.name}")
+kafkaProducer.publish(checkoutTopic, orderId.toString,
+  Json.toJson(event).toString())</code></pre>
+        </details>
+
+        <details class="code-callout">
+            <summary>Notification Pipeline &mdash; Function Composition <span class="callout-source">NotificationPipeline.scala</span></summary>
+            <pre><code>// Each step is a function Notification =&gt; Notification
+// Composed with andThen for a clean processing pipeline
+val pipeline: Notification =&gt; Notification = sanitize
+  .andThen(addTimestamp)
+  .andThen(truncate)
+
+// PartialFunction for channel-based routing
+val route: PartialFunction[Notification, String] =
+  emailHandler.orElse(smsHandler).orElse(pushHandler)</code></pre>
+        </details>
+    </div>
+
+    @request.flash.get("success").map { message =>
+        <div class="success">@message</div>
+    }
+    @request.flash.get("error").map { message =>
+        <div style="background: #f2dede; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 16px;">@message</div>
+    }
+
+    <!-- Tab Switcher -->
+    <div style="display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid #ddd;">
+        <a href="@_root_.flows.routes.FlowController.showFlows()?tab=checkout"
+           style="padding: 10px 24px; text-decoration: none; font-weight: @if(activeTab == "checkout"){bold}else{normal}; color: @if(activeTab == "checkout"){#1565C0}else{#666}; border-bottom: @if(activeTab == "checkout"){3px solid #1565C0}else{none}; margin-bottom: -2px;">
+            E-Commerce Checkout
+        </a>
+        <a href="@_root_.flows.routes.FlowController.showFlows()?tab=recovery"
+           style="padding: 10px 24px; text-decoration: none; font-weight: @if(activeTab == "recovery"){bold}else{normal}; color: @if(activeTab == "recovery"){#1565C0}else{#666}; border-bottom: @if(activeTab == "recovery"){3px solid #1565C0}else{none}; margin-bottom: -2px;">
+            Account Recovery
+        </a>
+    </div>
+
+    @if(activeTab == "checkout") {
+        <!-- ═══════════════════════════════════════════ -->
+        <!--              CHECKOUT FLOW                  -->
+        <!-- ═══════════════════════════════════════════ -->
+
+        <!-- Progress Indicator -->
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 32px; gap: 0;">
+            @for(i <- 1 to 5) {
+                <div style="display: flex; flex-direction: column; align-items: center; min-width: 80px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; color: white;
+                        background: @if(i < checkout.step){#4CAF50}else if(i == checkout.step){#2196F3}else{#ccc};">
+                        @if(i < checkout.step) {&#10003;} else {@i}
+                    </div>
+                    <div style="font-size: 0.75em; margin-top: 4px; color: #666; text-align: center;">
+                        @{i match {
+                            case 1 => "Select User"
+                            case 2 => "Build Cart"
+                            case 3 => "Coupon"
+                            case 4 => "Place Order"
+                            case 5 => "Confirm"
+                            case _ => ""
+                        }}
+                    </div>
+                </div>
+                @if(i < 5) {
+                    <div style="flex: 1; height: 3px; background: @if(i < checkout.step){#4CAF50}else{#ddd}; margin: 0 4px; margin-bottom: 20px;"></div>
+                }
+            }
+        </div>
+
+        <!-- Step 1: Select User -->
+        <div class="card" style="border-left: 4px solid @if(checkout.step > 1){#4CAF50}else if(checkout.step == 1){#2196F3}else{#ddd};">
+            <h3>Step 1: Select User</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Future</span>
+                <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Option</span>
+                <span style="display: inline-block; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">DB Query</span>
+            </div>
+            @if(checkout.step > 1) {
+                <p style="color: #4CAF50;">&#10003; Selected: <strong>@checkout.selectedUser.map(_.name).getOrElse("Unknown")</strong> (@checkout.selectedUser.map(_.email).getOrElse(""))</p>
+            } else {
+                @helper.form(action = _root_.flows.routes.FlowController.selectUser(), Symbol("class") -> "inline-form") {
+                    @helper.CSRF.formField
+                    <div class="form-group">
+                        <label for="userId">Choose a user</label>
+                        <select name="userId" id="userId" style="min-width: 200px;">
+                            @for(user <- users) {
+                                <option value="@user.id">@user.name (@user.email)</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-blue">Select User &rarr;</button>
+                }
+                @if(users.isEmpty) {
+                    <p style="color: #999;">No users found. <a href="@_root_.users.routes.UserController.showForm()">Create one first</a>.</p>
+                }
+            }
+            <details class="code-callout">
+                <summary>DB Query with Future + Option <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>userRepository.findById(form.userId).map {
+  case Some(user) =&gt;
+    Redirect(routes.FlowController.showFlows())
+      .withSession(request.session
+        + ("flow-checkout-step" -&gt; "2")
+        + ("flow-checkout-user" -&gt; user.id.toString))
+  case None =&gt;
+    Redirect(routes.FlowController.showFlows())
+      .flashing("error" -&gt; "User not found")
+}</code></pre>
+            </details>
+        </div>
+
+        <!-- Step 2: Build Cart -->
+        @if(checkout.step >= 2) {
+        <div class="card" style="border-left: 4px solid @if(checkout.step > 2){#4CAF50}else{#2196F3};">
+            <h3>Step 2: Build Cart</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">map</span>
+                <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">foldLeft</span>
+                <span style="display: inline-block; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">groupBy</span>
+            </div>
+
+            @helper.form(action = _root_.flows.routes.FlowController.addToCart(), Symbol("class") -> "inline-form") {
+                @helper.CSRF.formField
+                <div class="form-group">
+                    <label for="name">Item</label>
+                    <input type="text" id="cartItemName" name="name" placeholder="e.g. Laptop" required style="width: 120px;">
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select name="category" id="cartCategory">
+                        <option value="Electronics">Electronics</option>
+                        <option value="Books">Books</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Food">Food</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="unitPrice">Price</label>
+                    <input type="number" id="cartPrice" name="unitPrice" value="29.99" step="0.01" min="0.01" required style="width: 90px;">
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Qty</label>
+                    <input type="number" id="cartQty" name="quantity" value="1" min="1" required style="width: 60px;">
+                </div>
+                <button type="submit" class="btn-blue btn-sm">Add Item</button>
+                <button type="button" class="btn-autofill btn-sm" onclick="autoFillCartItem()">Auto Fill</button>
+            }
+
+            @if(checkout.cartItems.nonEmpty) {
+                <table style="margin-top: 12px;">
+                    <thead>
+                        <tr><th>Item</th><th>Category</th><th>Unit Price</th><th>Qty</th><th>Line Total</th></tr>
+                    </thead>
+                    <tbody>
+                        @for((item, total) <- _root_.cart.CartCalculator.lineTotals(checkout.cartItems)) {
+                            <tr>
+                                <td>@item.name</td>
+                                <td>@item.category</td>
+                                <td>$@{"%.2f".format(item.unitPrice)}</td>
+                                <td>@item.quantity</td>
+                                <td><strong>$@{"%.2f".format(total)}</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" style="text-align: right; font-weight: bold;">Grand Total (foldLeft):</td>
+                            <td><strong>$@{"%.2f".format(_root_.cart.CartCalculator.grandTotal(checkout.cartItems))}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                @defining(_root_.cart.CartCalculator.subtotalsByCategory(checkout.cartItems)) { byCategory =>
+                    @if(byCategory.size > 1) {
+                        <div style="margin-top: 8px; font-size: 0.9em; color: #666;">
+                            <strong>By Category (groupBy):</strong>
+                            @for((cat, subtotal) <- byCategory) {
+                                <span style="margin-left: 8px;">@cat: $@{"%.2f".format(subtotal)}</span>
+                            }
+                        </div>
+                    }
+                }
+
+                @if(checkout.step == 2) {
+                    @helper.form(action = _root_.flows.routes.FlowController.advanceToStep(3), Symbol("style") -> "display: inline; margin-top: 8px;") {
+                        @helper.CSRF.formField
+                        <button type="submit" style="margin-top: 8px;">Continue to Coupon &rarr;</button>
+                    }
+                }
+            }
+
+            <details class="code-callout">
+                <summary>Collection Operations: map, foldLeft, groupBy <span class="callout-source">CartCalculator.scala</span></summary>
+                <pre><code>// map - compute line totals
+def lineTotals(items: Seq[CartItem]): Seq[(CartItem, Double)] =
+  items.map(i =&gt; (i, i.unitPrice * i.quantity))
+
+// foldLeft - compute grand total
+def grandTotal(items: Seq[CartItem]): Double =
+  items.foldLeft(0.0)((total, item) =&gt; total + item.unitPrice * item.quantity)
+
+// groupBy + map - subtotals by category
+def subtotalsByCategory(items: Seq[CartItem]): Map[String, Double] =
+  items.groupBy(_.category).map((cat, catItems) =&gt;
+    cat -&gt; catItems.map(i =&gt; i.unitPrice * i.quantity).sum
+  )</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Step 3: Apply Coupon -->
+        @if(checkout.step >= 3) {
+        <div class="card" style="border-left: 4px solid @if(checkout.step > 3){#4CAF50}else{#2196F3};">
+            <h3>Step 3: Apply Coupon</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #FCE4EC; color: #C62828; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Try</span>
+                <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Option</span>
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Either</span>
+            </div>
+            @if(checkout.step > 3 && checkout.couponCode.isDefined) {
+                <p style="color: #4CAF50;">&#10003; Coupon <strong>@checkout.couponCode.getOrElse("")</strong> applied &mdash; discount: $@{"%.2f".format(checkout.couponDiscount.getOrElse(0.0))}</p>
+            } else if(checkout.step > 3) {
+                <p style="color: #999;">Coupon step skipped.</p>
+            } else {
+                @helper.form(action = _root_.flows.routes.FlowController.applyCoupon(), Symbol("class") -> "inline-form") {
+                    @helper.CSRF.formField
+                    <div class="form-group">
+                        <label for="code">Coupon Code</label>
+                        <input type="text" name="code" placeholder="e.g. SAVE10" style="width: 160px;">
+                    </div>
+                    <button type="submit" class="btn-blue btn-sm">Apply Coupon</button>
+                }
+                @helper.form(action = _root_.flows.routes.FlowController.skipCoupon(), Symbol("style") -> "display: inline; margin-left: 8px;") {
+                    @helper.CSRF.formField
+                    <button type="submit" class="btn-sm" style="background: #9E9E9E;">Skip &rarr;</button>
+                }
+                <p style="font-size: 0.85em; color: #999; margin-top: 8px;">
+                    Cart total: $@{"%.2f".format(_root_.cart.CartCalculator.grandTotal(checkout.cartItems))} &mdash;
+                    Try a code from the <a href="@_root_.coupons.routes.CouponController.showForm()">Coupons page</a>.
+                </p>
+            }
+            <details class="code-callout">
+                <summary>Try/Option/Either Validation Pipeline <span class="callout-source">CouponValidator.scala</span></summary>
+                <pre><code>// Step 1: Try - parse the input (could throw)
+def parseCode(raw: String): Try[String] =
+  Try { require(raw.nonEmpty, "Code cannot be empty"); raw.trim.toUpperCase }
+
+// Step 2: Option - look up result (may not exist)
+couponRepository.findByCode(code) // =&gt; Future[Option[Coupon]]
+
+// Step 3: Either - validate business rules
+def validateCoupon(coupon: Coupon, orderTotal: Double): Either[String, Coupon] =
+  if coupon.expiresAt.isBefore(LocalDate.now()) then Left("Expired")
+  else if coupon.usesRemaining &lt;= 0 then Left("No uses remaining")
+  else Right(coupon)</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Step 4: Place Order -->
+        @if(checkout.step >= 4) {
+        <div class="card" style="border-left: 4px solid @if(checkout.step > 4){#4CAF50}else{#2196F3};">
+            <h3>Step 4: Place Order</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Pattern Matching</span>
+                <span style="display: inline-block; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Future</span>
+            </div>
+            @if(checkout.step > 4) {
+                <p style="color: #4CAF50;">&#10003; Order <strong>#@checkout.orderId.getOrElse("")</strong> placed successfully!</p>
+            } else {
+                <div style="background: #f9f9f9; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                    <strong>Order Summary:</strong><br>
+                    User: @checkout.selectedUser.map(_.name).getOrElse("Unknown")<br>
+                    Items: @checkout.cartItems.map(i => s"${i.name} x${i.quantity}").mkString(", ")<br>
+                    @defining(_root_.cart.CartCalculator.grandTotal(checkout.cartItems)) { total =>
+                        Subtotal: $@{"%.2f".format(total)}<br>
+                        @checkout.couponDiscount.map { discount =>
+                            Discount: -$@{"%.2f".format(discount)}<br>
+                            <strong>Total: $@{"%.2f".format(total - discount)}</strong>
+                        }.getOrElse {
+                            <strong>Total: $@{"%.2f".format(total)}</strong>
+                        }
+                    }
+                </div>
+                @helper.form(action = _root_.flows.routes.FlowController.placeOrder()) {
+                    @helper.CSRF.formField
+                    <button type="submit">Place Order &rarr;</button>
+                }
+            }
+            <details class="code-callout">
+                <summary>Pattern Matching on Futures <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>userRepository.findById(userId).flatMap {
+  case None =&gt;
+    Future.successful(Redirect(routes.FlowController.showFlows())
+      .flashing("error" -&gt; "User not found"))
+  case Some(user) =&gt;
+    if cartItems.isEmpty then
+      Future.successful(Redirect(...).flashing("error" -&gt; "Cart is empty"))
+    else
+      orderRepository.create(user.name, itemSummary, totalQty).map { order =&gt;
+        Redirect(routes.FlowController.showFlows())
+          .withSession(session + ("flow-checkout-order" -&gt; order.id.toString))
+      }
+}</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Step 5: Confirmation -->
+        @if(checkout.step >= 5) {
+        <div class="card" style="border-left: 4px solid @if(checkout.step > 5){#4CAF50}else{#2196F3};">
+            <h3>Step 5: Send Confirmation</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #F3E5F5; color: #6A1B9A; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Function Composition</span>
+                <span style="display: inline-block; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Kafka</span>
+            </div>
+            @if(checkout.step > 5) {
+                <p style="color: #4CAF50;">&#10003; Confirmation email published to Kafka and processed through notification pipeline!</p>
+            } else {
+                <p>Ready to send a checkout confirmation email for Order #@checkout.orderId.getOrElse("") to @checkout.selectedUser.map(_.email).getOrElse("unknown").</p>
+                <p style="font-size: 0.85em; color: #666;">This will: (1) Build a <code>Notification</code>, (2) Run it through <code>NotificationPipeline.processWithSteps</code> (sanitize &rarr; timestamp &rarr; truncate &rarr; format &rarr; route), (3) Publish a <code>FlowEvent</code> to Kafka topic <code>checkout-email</code>.</p>
+                @helper.form(action = _root_.flows.routes.FlowController.confirmCheckout()) {
+                    @helper.CSRF.formField
+                    <button type="submit" class="btn-blue">Send Confirmation &rarr;</button>
+                }
+            }
+            <details class="code-callout">
+                <summary>Notification Pipeline + Kafka Publish <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>val notification = Notification(
+  channel = "email",
+  recipient = user.email,
+  message = s"Order #$orderId confirmed! Thank you, ${user.name}."
+)
+val (_, routed) = NotificationPipeline.processWithSteps(notification)
+
+val event = FlowEvent("CheckoutEmail", Instant.now().toString,
+  s"Order #$orderId for ${user.name}: $routed")
+kafkaProducer.publish(checkoutTopic, orderId.toString,
+  Json.toJson(event).toString())</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Reset button -->
+        <div style="margin-top: 16px;">
+            @helper.form(action = _root_.flows.routes.FlowController.resetCheckout(), Symbol("style") -> "display: inline;") {
+                @helper.CSRF.formField
+                <button type="submit" class="btn-red btn-sm">Reset Checkout Flow</button>
+            }
+        </div>
+
+        <!-- Kafka Events -->
+        <h2 style="margin-top: 32px;">Kafka Events Log</h2>
+        @defining(checkout.kafkaEvents.filter(e => e.eventType == "CheckoutEmail")) { checkoutEvents =>
+            @if(checkoutEvents.isEmpty) {
+                <p style="color: #999;">No checkout email events consumed yet. Complete the flow to see events appear.</p>
+            } else {
+                <table>
+                    <thead><tr><th>Type</th><th>Timestamp</th><th>Detail</th></tr></thead>
+                    <tbody>
+                        @for(event <- checkoutEvents) {
+                            <tr>
+                                <td>@event.eventType</td>
+                                <td style="font-size: 0.85em;">@event.timestamp</td>
+                                <td style="font-size: 0.85em;">@event.detail</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+    } else {
+        <!-- ═══════════════════════════════════════════ -->
+        <!--            ACCOUNT RECOVERY FLOW            -->
+        <!-- ═══════════════════════════════════════════ -->
+
+        <!-- Progress Indicator -->
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 32px; gap: 0;">
+            @for(i <- 1 to 4) {
+                <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; color: white;
+                        background: @if(i < recovery.step){#4CAF50}else if(i == recovery.step){#2196F3}else{#ccc};">
+                        @if(i < recovery.step) {&#10003;} else {@i}
+                    </div>
+                    <div style="font-size: 0.75em; margin-top: 4px; color: #666; text-align: center;">
+                        @{i match {
+                            case 1 => "Enter Email"
+                            case 2 => "Generate Token"
+                            case 3 => "Send Email"
+                            case 4 => "Confirm Reset"
+                            case _ => ""
+                        }}
+                    </div>
+                </div>
+                @if(i < 4) {
+                    <div style="flex: 1; height: 3px; background: @if(i < recovery.step){#4CAF50}else{#ddd}; margin: 0 4px; margin-bottom: 20px;"></div>
+                }
+            }
+        </div>
+
+        <!-- Step 1: Enter Email -->
+        <div class="card" style="border-left: 4px solid @if(recovery.step > 1){#4CAF50}else{#2196F3};">
+            <h3>Step 1: Enter Email</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Option</span>
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Future</span>
+            </div>
+            @if(recovery.step > 1) {
+                <p style="color: #4CAF50;">&#10003; Found user: <strong>@recovery.user.map(_.name).getOrElse("Unknown")</strong> (@recovery.email.getOrElse(""))</p>
+            } else {
+                @helper.form(action = _root_.flows.routes.FlowController.enterEmail(), Symbol("class") -> "inline-form") {
+                    @helper.CSRF.formField
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" name="email" placeholder="user@@example.com" required style="width: 250px;">
+                    </div>
+                    <button type="submit" class="btn-blue btn-sm">Look Up &rarr;</button>
+                }
+                <p style="font-size: 0.85em; color: #999; margin-top: 8px;">
+                    Try an email from the <a href="@_root_.users.routes.UserController.showForm()">Users page</a>.
+                </p>
+            }
+            <details class="code-callout">
+                <summary>Future[Option[User]] Lookup <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>userRepository.findByEmail(form.email).map {
+  case Some(user) =&gt;
+    Redirect(...).withSession(request.session
+      + ("flow-recovery-step" -&gt; "2")
+      + ("flow-recovery-email" -&gt; form.email))
+      .flashing("success" -&gt; s"Found user: ${user.name}")
+  case None =&gt;
+    Redirect(...).flashing("error" -&gt; s"No user found with email: ${form.email}")
+}</code></pre>
+            </details>
+        </div>
+
+        <!-- Step 2: Generate Token -->
+        @if(recovery.step >= 2) {
+        <div class="card" style="border-left: 4px solid @if(recovery.step > 2){#4CAF50}else{#2196F3};">
+            <h3>Step 2: Generate Token</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #FCE4EC; color: #C62828; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Try</span>
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Random Generation</span>
+            </div>
+            @if(recovery.step > 2) {
+                <p style="color: #4CAF50;">&#10003; Token generated: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">@recovery.token.getOrElse("")</code></p>
+            } else {
+                <p>Generate a secure random reset token for <strong>@recovery.user.map(_.name).getOrElse(recovery.email.getOrElse("unknown"))</strong>.</p>
+                @helper.form(action = _root_.flows.routes.FlowController.generateToken()) {
+                    @helper.CSRF.formField
+                    <button type="submit" class="btn-blue">Generate Token &rarr;</button>
+                }
+            }
+            <details class="code-callout">
+                <summary>Token Generation with UUID <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>def generateToken() = Action { implicit request =&gt;
+  val token = UUID.randomUUID().toString.take(8).toUpperCase
+  Redirect(routes.FlowController.showFlows().url + "?tab=recovery")
+    .withSession(request.session
+      + ("flow-recovery-step" -&gt; "3")
+      + ("flow-recovery-token" -&gt; token))
+    .flashing("success" -&gt; s"Reset token generated: $token")
+}</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Step 3: Send Reset Email -->
+        @if(recovery.step >= 3) {
+        <div class="card" style="border-left: 4px solid @if(recovery.step > 3){#4CAF50}else{#2196F3};">
+            <h3>Step 3: Send Reset Email</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #F3E5F5; color: #6A1B9A; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Function Composition</span>
+                <span style="display: inline-block; background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Kafka</span>
+            </div>
+            @if(recovery.step > 3) {
+                <p style="color: #4CAF50;">&#10003; Reset email published to Kafka and processed through notification pipeline!</p>
+            } else {
+                <p>Send password reset email to <strong>@recovery.email.getOrElse("")</strong> with token <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">@recovery.token.getOrElse("")</code>.</p>
+                <p style="font-size: 0.85em; color: #666;">This will run through the NotificationPipeline (sanitize &rarr; timestamp &rarr; truncate &rarr; format &rarr; route) and publish to Kafka topic <code>password-reset</code>.</p>
+                @helper.form(action = _root_.flows.routes.FlowController.sendResetEmail()) {
+                    @helper.CSRF.formField
+                    <button type="submit" class="btn-blue">Send Reset Email &rarr;</button>
+                }
+            }
+            <details class="code-callout">
+                <summary>Pipeline + Kafka for Password Reset <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>val notification = Notification(
+  channel = "email",
+  recipient = email,
+  message = s"Password reset for ${user.name}. Use token: $token"
+)
+val (_, routed) = NotificationPipeline.processWithSteps(notification)
+
+val event = FlowEvent("PasswordReset", Instant.now().toString,
+  s"Reset email for ${user.name} with token $token: $routed")
+kafkaProducer.publish(resetTopic, email, Json.toJson(event).toString())</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Step 4: Confirm Reset -->
+        @if(recovery.step >= 4) {
+        <div class="card" style="border-left: 4px solid @if(recovery.step > 4){#4CAF50}else{#2196F3};">
+            <h3>Step 4: Confirm Reset</h3>
+            <div style="margin-bottom: 8px;">
+                <span style="display: inline-block; background: #E3F2FD; color: #1565C0; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 4px;">Either</span>
+                <span style="display: inline-block; background: #FCE4EC; color: #C62828; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Pattern Matching</span>
+            </div>
+            @if(recovery.step > 4 && recovery.tokenValid.contains(true)) {
+                <p style="color: #4CAF50;">&#10003; Password reset confirmed! Token validated successfully.</p>
+            } else {
+                <p>Enter the token you received and a new password to complete the reset.</p>
+                @helper.form(action = _root_.flows.routes.FlowController.confirmReset(), Symbol("class") -> "inline-form") {
+                    @helper.CSRF.formField
+                    <div class="form-group">
+                        <label for="token">Reset Token</label>
+                        <input type="text" name="token" placeholder="Enter token" required style="width: 140px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="text" name="newPassword" placeholder="New password" required style="width: 160px;">
+                    </div>
+                    <button type="submit" class="btn-blue btn-sm">Confirm Reset &rarr;</button>
+                }
+                <p style="font-size: 0.85em; color: #999; margin-top: 8px;">
+                    Hint: the generated token is <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">@recovery.token.getOrElse("???")</code>
+                </p>
+            }
+            <details class="code-callout">
+                <summary>Token Validation with Pattern Matching <span class="callout-source">FlowController.scala</span></summary>
+                <pre><code>val storedToken = request.session.get("flow-recovery-token")
+storedToken match
+  case Some(token) if token == form.token =&gt;
+    Redirect(...)
+      .withSession(request.session
+        + ("flow-recovery-step" -&gt; "5")
+        + ("flow-recovery-valid" -&gt; "true"))
+      .flashing("success" -&gt; "Password reset successful!")
+  case Some(_) =&gt;
+    Redirect(...)
+      .flashing("error" -&gt; "Invalid token! Tokens don't match.")
+  case None =&gt;
+    Redirect(...)
+      .flashing("error" -&gt; "No token found.")</code></pre>
+            </details>
+        </div>
+        }
+
+        <!-- Reset button -->
+        <div style="margin-top: 16px;">
+            @helper.form(action = _root_.flows.routes.FlowController.resetRecovery(), Symbol("style") -> "display: inline;") {
+                @helper.CSRF.formField
+                <button type="submit" class="btn-red btn-sm">Reset Recovery Flow</button>
+            }
+        </div>
+
+        <!-- Kafka Events -->
+        <h2 style="margin-top: 32px;">Kafka Events Log</h2>
+        @defining(recovery.kafkaEvents.filter(e => e.eventType == "PasswordReset")) { resetEvents =>
+            @if(resetEvents.isEmpty) {
+                <p style="color: #999;">No password reset events consumed yet. Complete the flow to see events appear.</p>
+            } else {
+                <table>
+                    <thead><tr><th>Type</th><th>Timestamp</th><th>Detail</th></tr></thead>
+                    <tbody>
+                        @for(event <- resetEvents) {
+                            <tr>
+                                <td>@event.eventType</td>
+                                <td style="font-size: 0.85em;">@event.timestamp</td>
+                                <td style="font-size: 0.85em;">@event.detail</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+    }
+
+    <script>
+    function autoFillCartItem() {
+        var items = [
+            { name: 'Laptop', category: 'Electronics', price: 999.99, qty: 1 },
+            { name: 'Wireless Mouse', category: 'Electronics', price: 29.99, qty: 2 },
+            { name: 'Scala Programming', category: 'Books', price: 49.95, qty: 1 },
+            { name: 'USB-C Cable', category: 'Electronics', price: 12.99, qty: 3 },
+            { name: 'Coffee Beans', category: 'Food', price: 18.50, qty: 2 },
+            { name: 'Hoodie', category: 'Clothing', price: 45.00, qty: 1 },
+            { name: 'Mechanical Keyboard', category: 'Electronics', price: 149.99, qty: 1 },
+            { name: 'Notebook', category: 'Books', price: 8.99, qty: 5 }
+        ];
+        var item = items[Math.floor(Math.random() * items.length)];
+        document.getElementById('cartItemName').value = item.name;
+        document.getElementById('cartCategory').value = item.category;
+        document.getElementById('cartPrice').value = item.price;
+        document.getElementById('cartQty').value = item.qty;
+    }
+    </script>
+}

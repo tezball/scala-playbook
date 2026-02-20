@@ -20,6 +20,12 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(using e
 
   def count(): Future[Int] = db.run(users.length.result)
 
+  def findById(id: Long): Future[Option[User]] =
+    db.run(users.filter(_.id === id).result.headOption)
+
+  def findByEmail(email: String): Future[Option[User]] =
+    db.run(users.filter(_.email === email).result.headOption)
+
   def create(name: String, email: String, phone: String): Future[User] =
     val insertQuery = (users.map(u => (u.name, u.email, u.phone))
       returning users.map(_.id)

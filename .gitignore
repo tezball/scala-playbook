@@ -1,0 +1,29 @@
+# IDEs
+.idea/
+*.iml
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+
+# SBT / Scala
+target/
+project/target/
+project/project/
+.bloop/
+.metals/
+.scala_dependencies
+.bsp/
+
+# Play Framework
+logs/
+RUNNING_PID
+dist/
+
+# Generic
+out/
+build/
+.DS_Store
+*.class
+*.log

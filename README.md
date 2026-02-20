@@ -12,10 +12,11 @@ Each page is a self-contained demo with a form to interact with, visible results
 
 This single script handles everything:
 
-1. Stops any running containers (`docker compose down`)
-2. Rebuilds the app and starts all services (`docker compose up --build`)
-3. Waits for the app to be ready on port 9000
-4. Opens your browser to [http://localhost:9000](http://localhost:9000)
+1. Stops any running containers and **wipes data volumes** for a fresh DB (`docker compose down --remove-orphans --volumes`)
+2. Kills any stray process on port 9000 (e.g. a previous `sbt run`)
+3. Rebuilds the app image and starts all services (`docker compose up --build -d`)
+4. Polls `localhost:9000` until the app responds (times out after 180s)
+5. Opens your browser to [http://localhost:9000](http://localhost:9000)
 
 ### Prerequisites
 
@@ -91,3 +92,7 @@ The `docker-compose.yml` runs three services:
 | **app** | 9000 | Play Framework application |
 | **db** | 5432 | PostgreSQL 16 (auto-applies evolutions on startup) |
 | **kafka** | 9092 | Apache Kafka 3.9 (KRaft mode, no Zookeeper) |
+
+---
+
+Built with [Claude Code](https://claude.ai/claude-code) and [Gemini CLI](https://github.com/google-gemini/gemini-cli).

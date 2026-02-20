@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 echo "Stopping any running services..."
-docker compose down --remove-orphans 2>/dev/null
+docker compose down --remove-orphans --volumes 2>/dev/null
 
 # Kill anything else holding port 9000 (e.g. a previous sbt run)
 PID=$(lsof -ti:9000 2>/dev/null || true)
@@ -17,7 +17,7 @@ echo "Rebuilding and starting services..."
 docker compose up --build -d
 
 echo "Waiting for app to be ready on port 9000..."
-MAX_WAIT=120
+MAX_WAIT=180
 ELAPSED=0
 while [ $ELAPSED -lt $MAX_WAIT ]; do
   STATUS=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 2 http://localhost:9000 2>/dev/null || true)

@@ -89,47 +89,70 @@ def display[A](items: Seq[A])(using s: Show[A]): Seq[String] =
             <textarea id="comment" name="comment" rows="2" required>"""),_display_(/*64.70*/form("comment")/*64.85*/.value.getOrElse("")),format.raw/*64.105*/("""</textarea>
         </div>
 
-        <button type="submit" class="btn-orange">Submit Review</button>
-    """)))}),format.raw/*68.6*/("""
+        <div class="btn-group">
+            <button type="submit" class="btn-orange">Submit Review</button>
+            <button type="button" class="btn-autofill" onclick="autoFillReview()">Auto Fill</button>
+        </div>
+    """)))}),format.raw/*71.6*/("""
 
-    """),format.raw/*70.5*/("""<h2>Reviews (sorted by <code>given Ordering</code>)</h2>
+    """),format.raw/*73.5*/("""<script>
+    function autoFillReview() """),format.raw/*74.31*/("""{"""),format.raw/*74.32*/("""
+        """),format.raw/*75.9*/("""var reviews = [
+            """),format.raw/*76.13*/("""{"""),format.raw/*76.14*/(""" """),format.raw/*76.15*/("""product: 'MacBook Pro 16"', author: 'Alice Johnson', rating: 5, comment: 'Incredible performance for software development. The M3 chip handles sbt compilation like a breeze.' """),format.raw/*76.190*/("""}"""),format.raw/*76.191*/(""",
+            """),format.raw/*77.13*/("""{"""),format.raw/*77.14*/(""" """),format.raw/*77.15*/("""product: 'Wireless Mouse', author: 'Bob Martinez', rating: 3, comment: 'Decent mouse but the scroll wheel started squeaking after a month. Battery life is good though.' """),format.raw/*77.184*/("""}"""),format.raw/*77.185*/(""",
+            """),format.raw/*78.13*/("""{"""),format.raw/*78.14*/(""" """),format.raw/*78.15*/("""product: 'Standing Desk', author: 'Carol Chen', rating: 4, comment: 'Sturdy build quality and smooth height adjustment. Cable management could be better.' """),format.raw/*78.170*/("""}"""),format.raw/*78.171*/(""",
+            """),format.raw/*79.13*/("""{"""),format.raw/*79.14*/(""" """),format.raw/*79.15*/("""product: 'Noise-Cancelling Headphones', author: 'David Kim', rating: 5, comment: 'Best headphones I have ever owned. The noise cancellation is perfect for open offices.' """),format.raw/*79.185*/("""}"""),format.raw/*79.186*/(""",
+            """),format.raw/*80.13*/("""{"""),format.raw/*80.14*/(""" """),format.raw/*80.15*/("""product: 'Ergonomic Chair', author: 'Eva Rossi', rating: 2, comment: 'Lumbar support is uncomfortable and the armrests wobble. Not worth the premium price.' """),format.raw/*80.172*/("""}"""),format.raw/*80.173*/(""",
+            """),format.raw/*81.13*/("""{"""),format.raw/*81.14*/(""" """),format.raw/*81.15*/("""product: 'Mechanical Keyboard', author: 'Frank Okafor', rating: 4, comment: 'Great tactile feedback with Cherry MX Browns. A bit loud for shared workspaces.' """),format.raw/*81.173*/("""}"""),format.raw/*81.174*/(""",
+            """),format.raw/*82.13*/("""{"""),format.raw/*82.14*/(""" """),format.raw/*82.15*/("""product: 'USB-C Hub', author: 'Grace Liu', rating: 1, comment: 'Stopped working after two weeks. The HDMI port never detected my external monitor reliably.' """),format.raw/*82.172*/("""}"""),format.raw/*82.173*/(""",
+            """),format.raw/*83.13*/("""{"""),format.raw/*83.14*/(""" """),format.raw/*83.15*/("""product: '27" 4K Monitor', author: 'Henry Park', rating: 5, comment: 'Crystal clear text rendering makes code so much easier to read. Colors are accurate out of the box.' """),format.raw/*83.186*/("""}"""),format.raw/*83.187*/("""
+        """),format.raw/*84.9*/("""];
+        var r = reviews[Math.floor(Math.random() * reviews.length)];
+        document.getElementById('productName').value = r.product;
+        document.getElementById('author').value = r.author;
+        document.getElementById('rating').value = r.rating;
+        document.getElementById('comment').value = r.comment;
+    """),format.raw/*90.5*/("""}"""),format.raw/*90.6*/("""
+    """),format.raw/*91.5*/("""</script>
+
+    <h2>Reviews (sorted by <code>given Ordering</code>)</h2>
     <p>
         Sort by:
-        <a href="?sort=rating" """),_display_(if(currentSort == "rating")/*73.60*/{_display_(Seq[Any](format.raw/*73.61*/(""" """),format.raw/*73.62*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*73.88*/(""">Rating</a> |
-        <a href="?sort=date" """),_display_(if(currentSort == "date")/*74.56*/{_display_(Seq[Any](format.raw/*74.57*/(""" """),format.raw/*74.58*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*74.84*/(""">Date</a> |
-        <a href="?sort=author" """),_display_(if(currentSort == "author")/*75.60*/{_display_(Seq[Any](format.raw/*75.61*/(""" """),format.raw/*75.62*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*75.88*/(""">Author</a>
+        <a href="?sort=rating" """),_display_(if(currentSort == "rating")/*96.60*/{_display_(Seq[Any](format.raw/*96.61*/(""" """),format.raw/*96.62*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*96.88*/(""">Rating</a> |
+        <a href="?sort=date" """),_display_(if(currentSort == "date")/*97.56*/{_display_(Seq[Any](format.raw/*97.57*/(""" """),format.raw/*97.58*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*97.84*/(""">Date</a> |
+        <a href="?sort=author" """),_display_(if(currentSort == "author")/*98.60*/{_display_(Seq[Any](format.raw/*98.61*/(""" """),format.raw/*98.62*/("""style="font-weight:bold" """)))} else {null} ),format.raw/*98.88*/(""">Author</a>
     </p>
 
-    """),_display_(if(reviewList.isEmpty)/*78.28*/ {_display_(Seq[Any](format.raw/*78.30*/("""
-        """),format.raw/*79.9*/("""<p>No reviews yet. Be the first!</p>
-    """)))}else/*80.12*/{_display_(Seq[Any](format.raw/*80.13*/("""
-        """),format.raw/*81.9*/("""<table>
+    """),_display_(if(reviewList.isEmpty)/*101.28*/ {_display_(Seq[Any](format.raw/*101.30*/("""
+        """),format.raw/*102.9*/("""<p>No reviews yet. Be the first!</p>
+    """)))}else/*103.12*/{_display_(Seq[Any](format.raw/*103.13*/("""
+        """),format.raw/*104.9*/("""<table>
             <thead><tr><th>Stars</th><th>Product</th><th>Author</th><th>Comment</th><th>Date</th></tr></thead>
             <tbody>
-                """),_display_(/*84.18*/for(review <- reviewList) yield /*84.43*/ {_display_(Seq[Any](format.raw/*84.45*/("""
-                    """),format.raw/*85.21*/("""<tr>
-                        <td>"""),_display_(/*86.30*/review/*86.36*/.stars),format.raw/*86.42*/("""</td>
-                        <td>"""),_display_(/*87.30*/review/*87.36*/.productName),format.raw/*87.48*/("""</td>
-                        <td>"""),_display_(/*88.30*/review/*88.36*/.author),format.raw/*88.43*/("""</td>
-                        <td>"""),_display_(/*89.30*/review/*89.36*/.comment),format.raw/*89.44*/("""</td>
-                        <td>"""),_display_(/*90.30*/review/*90.36*/.createdAt),format.raw/*90.46*/("""</td>
+                """),_display_(/*107.18*/for(review <- reviewList) yield /*107.43*/ {_display_(Seq[Any](format.raw/*107.45*/("""
+                    """),format.raw/*108.21*/("""<tr>
+                        <td>"""),_display_(/*109.30*/review/*109.36*/.stars),format.raw/*109.42*/("""</td>
+                        <td>"""),_display_(/*110.30*/review/*110.36*/.productName),format.raw/*110.48*/("""</td>
+                        <td>"""),_display_(/*111.30*/review/*111.36*/.author),format.raw/*111.43*/("""</td>
+                        <td>"""),_display_(/*112.30*/review/*112.36*/.comment),format.raw/*112.44*/("""</td>
+                        <td>"""),_display_(/*113.30*/review/*113.36*/.createdAt),format.raw/*113.46*/("""</td>
                     </tr>
-                """)))}),format.raw/*92.18*/("""
-            """),format.raw/*93.13*/("""</tbody>
+                """)))}),format.raw/*115.18*/("""
+            """),format.raw/*116.13*/("""</tbody>
         </table>
-    """)))}),format.raw/*95.6*/("""
+    """)))}),format.raw/*118.6*/("""
 
-    """),format.raw/*97.5*/("""<h2><code>Show[Review]</code> Type Class Output</h2>
-    """),_display_(if(showOutput.isEmpty)/*98.28*/ {_display_(Seq[Any](format.raw/*98.30*/("""
-        """),format.raw/*99.9*/("""<p>No reviews to display.</p>
-    """)))}else/*100.12*/{_display_(Seq[Any](format.raw/*100.13*/("""
-        """),format.raw/*101.9*/("""<ul>
-            """),_display_(/*102.14*/for(line <- showOutput) yield /*102.37*/ {_display_(Seq[Any](format.raw/*102.39*/("""
-                """),format.raw/*103.17*/("""<li><code>"""),_display_(/*103.28*/line),format.raw/*103.32*/("""</code></li>
-            """)))}),format.raw/*104.14*/("""
-        """),format.raw/*105.9*/("""</ul>
-    """)))}),format.raw/*106.6*/("""
-""")))}),format.raw/*107.2*/("""
+    """),format.raw/*120.5*/("""<h2><code>Show[Review]</code> Type Class Output</h2>
+    """),_display_(if(showOutput.isEmpty)/*121.28*/ {_display_(Seq[Any](format.raw/*121.30*/("""
+        """),format.raw/*122.9*/("""<p>No reviews to display.</p>
+    """)))}else/*123.12*/{_display_(Seq[Any](format.raw/*123.13*/("""
+        """),format.raw/*124.9*/("""<ul>
+            """),_display_(/*125.14*/for(line <- showOutput) yield /*125.37*/ {_display_(Seq[Any](format.raw/*125.39*/("""
+                """),format.raw/*126.17*/("""<li><code>"""),_display_(/*126.28*/line),format.raw/*126.32*/("""</code></li>
+            """)))}),format.raw/*127.14*/("""
+        """),format.raw/*128.9*/("""</ul>
+    """)))}),format.raw/*129.6*/("""
+""")))}),format.raw/*130.2*/("""
 """))
       }
     }
@@ -147,9 +170,9 @@ def display[A](items: Seq[A])(using s: Show[A]): Seq[String] =
               /*
                   -- GENERATED --
                   SOURCE: app/views/reviewBoard.scala.html
-                  HASH: 3d4513c7ef0e5df42b59a6e20d1ce0876ed814bc
-                  MATRIX: 858->1|1110->160|1137->162|1184->201|1223->203|1254->208|2289->1215|2318->1216|2353->1223|2382->1224|2411->1225|2443->1229|2472->1230|2508->1238|2537->1239|2568->1242|2597->1243|2634->1252|2663->1253|2805->1369|2821->1376|2855->1401|2906->1414|2942->1423|2991->1445|3019->1452|3061->1464|3094->1470|3149->1499|3164->1505|3239->1571|3279->1573|3316->1583|3331->1589|3367->1604|3404->1614|3589->1772|3617->1791|3659->1811|3862->1987|3885->2001|3927->2021|4132->2199|4170->2221|4210->2223|4259->2244|4302->2260|4324->2261|4399->2309|4438->2310|4491->2319|4520->2321|4542->2322|4572->2323|4603->2326|4660->2361|4718->2388|4759->2401|4963->2578|4987->2593|5029->2613|5164->2718|5197->2724|5365->2865|5404->2866|5433->2867|5503->2893|5599->2962|5638->2963|5667->2964|5737->2990|5835->3061|5874->3062|5903->3063|5973->3089|6049->3138|6089->3140|6125->3149|6190->3197|6229->3198|6265->3207|6448->3363|6489->3388|6529->3390|6578->3411|6639->3445|6654->3451|6681->3457|6743->3492|6758->3498|6791->3510|6853->3545|6868->3551|6896->3558|6958->3593|6973->3599|7002->3607|7064->3642|7079->3648|7110->3658|7190->3707|7231->3720|7292->3751|7325->3757|7432->3837|7472->3839|7508->3848|7567->3889|7607->3890|7644->3899|7690->3917|7730->3940|7771->3942|7817->3959|7856->3970|7882->3974|7940->4000|7977->4009|8019->4020|8052->4022
-                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|60->35|60->35|60->35|60->35|61->36|61->36|61->36|62->37|64->39|65->40|65->40|65->40|65->40|66->41|66->41|66->41|68->43|70->45|70->45|70->45|75->50|75->50|75->50|81->56|81->56|81->56|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|83->58|84->59|89->64|89->64|89->64|93->68|95->70|98->73|98->73|98->73|98->73|99->74|99->74|99->74|99->74|100->75|100->75|100->75|100->75|103->78|103->78|104->79|105->80|105->80|106->81|109->84|109->84|109->84|110->85|111->86|111->86|111->86|112->87|112->87|112->87|113->88|113->88|113->88|114->89|114->89|114->89|115->90|115->90|115->90|117->92|118->93|120->95|122->97|123->98|123->98|124->99|125->100|125->100|126->101|127->102|127->102|127->102|128->103|128->103|128->103|129->104|130->105|131->106|132->107
+                  HASH: 23a37258194581b9517b8ddc96efe06c9a332a4e
+                  MATRIX: 858->1|1110->160|1137->162|1184->201|1223->203|1254->208|2289->1215|2318->1216|2353->1223|2382->1224|2411->1225|2443->1229|2472->1230|2508->1238|2537->1239|2568->1242|2597->1243|2634->1252|2663->1253|2805->1369|2821->1376|2855->1401|2906->1414|2942->1423|2991->1445|3019->1452|3061->1464|3094->1470|3149->1499|3164->1505|3239->1571|3279->1573|3316->1583|3331->1589|3367->1604|3404->1614|3589->1772|3617->1791|3659->1811|3862->1987|3885->2001|3927->2021|4132->2199|4170->2221|4210->2223|4259->2244|4302->2260|4324->2261|4399->2309|4438->2310|4491->2319|4520->2321|4542->2322|4572->2323|4603->2326|4660->2361|4718->2388|4759->2401|4963->2578|4987->2593|5029->2613|5316->2870|5349->2876|5416->2915|5445->2916|5481->2925|5537->2953|5566->2954|5595->2955|5799->3130|5829->3131|5871->3145|5900->3146|5929->3147|6127->3316|6157->3317|6199->3331|6228->3332|6257->3333|6441->3488|6471->3489|6513->3503|6542->3504|6571->3505|6770->3675|6800->3676|6842->3690|6871->3691|6900->3692|7086->3849|7116->3850|7158->3864|7187->3865|7216->3866|7403->4024|7433->4025|7475->4039|7504->4040|7533->4041|7719->4198|7749->4199|7791->4213|7820->4214|7849->4215|8049->4386|8079->4387|8115->4396|8466->4720|8494->4721|8526->4726|8709->4882|8748->4883|8777->4884|8847->4910|8943->4979|8982->4980|9011->4981|9081->5007|9179->5078|9218->5079|9247->5080|9317->5106|9394->5155|9435->5157|9472->5166|9538->5214|9578->5215|9615->5224|9799->5380|9841->5405|9882->5407|9932->5428|9994->5462|10010->5468|10038->5474|10101->5509|10117->5515|10151->5527|10214->5562|10230->5568|10259->5575|10322->5610|10338->5616|10368->5624|10431->5659|10447->5665|10479->5675|10560->5724|10602->5737|10664->5768|10698->5774|10806->5854|10847->5856|10884->5865|10943->5906|10983->5907|11020->5916|11066->5934|11106->5957|11147->5959|11193->5976|11232->5987|11258->5991|11316->6017|11353->6026|11395->6037|11428->6039
+                  LINES: 22->1|27->2|28->3|28->3|28->3|29->4|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|54->29|60->35|60->35|60->35|60->35|61->36|61->36|61->36|62->37|64->39|65->40|65->40|65->40|65->40|66->41|66->41|66->41|68->43|70->45|70->45|70->45|75->50|75->50|75->50|81->56|81->56|81->56|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|82->57|83->58|84->59|89->64|89->64|89->64|96->71|98->73|99->74|99->74|100->75|101->76|101->76|101->76|101->76|101->76|102->77|102->77|102->77|102->77|102->77|103->78|103->78|103->78|103->78|103->78|104->79|104->79|104->79|104->79|104->79|105->80|105->80|105->80|105->80|105->80|106->81|106->81|106->81|106->81|106->81|107->82|107->82|107->82|107->82|107->82|108->83|108->83|108->83|108->83|108->83|109->84|115->90|115->90|116->91|121->96|121->96|121->96|121->96|122->97|122->97|122->97|122->97|123->98|123->98|123->98|123->98|126->101|126->101|127->102|128->103|128->103|129->104|132->107|132->107|132->107|133->108|134->109|134->109|134->109|135->110|135->110|135->110|136->111|136->111|136->111|137->112|137->112|137->112|138->113|138->113|138->113|140->115|141->116|143->118|145->120|146->121|146->121|147->122|148->123|148->123|149->124|150->125|150->125|150->125|151->126|151->126|151->126|152->127|153->128|154->129|155->130
                   -- GENERATED --
               */
           

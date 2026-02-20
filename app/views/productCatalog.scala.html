@@ -69,8 +69,32 @@ def taxRate(category: Category): Double = category match
             <input type="number" id="discountValue" name="discountValue" step="0.01" min="0" value="@form("discountValue").value.getOrElse("0")" required>
         </div>
 
-        <button type="submit">Add Product</button>
+        <div class="btn-group">
+            <button type="submit">Add Product</button>
+            <button type="button" class="btn-autofill" onclick="autoFillProduct()">Auto Fill</button>
+        </div>
     }
+
+    <script>
+    function autoFillProduct() {
+        var products = [
+            { name: 'MacBook Pro 16"', cat: 'Electronics', price: 2499.00, dtype: 'percentage', dval: 10 },
+            { name: 'The Pragmatic Programmer', cat: 'Books', price: 49.99, dtype: 'none', dval: 0 },
+            { name: 'Merino Wool Sweater', cat: 'Clothing', price: 89.00, dtype: 'fixed', dval: 15 },
+            { name: 'Organic Avocados (6pk)', cat: 'Food', price: 8.99, dtype: 'bogo', dval: 0 },
+            { name: 'Carbon Fiber Tennis Racket', cat: 'Sports', price: 199.99, dtype: 'percentage', dval: 20 },
+            { name: 'Wireless Noise-Cancelling Headphones', cat: 'Electronics', price: 349.00, dtype: 'fixed', dval: 50 },
+            { name: 'Running Shorts', cat: 'Clothing', price: 34.99, dtype: 'none', dval: 0 },
+            { name: 'Scala 3 In Depth', cat: 'Books', price: 44.95, dtype: 'percentage', dval: 15 }
+        ];
+        var p = products[Math.floor(Math.random() * products.length)];
+        document.getElementById('name').value = p.name;
+        document.getElementById('category').value = p.cat;
+        document.getElementById('basePrice').value = p.price;
+        document.getElementById('discountType').value = p.dtype;
+        document.getElementById('discountValue').value = p.dval;
+    }
+    </script>
 
     <h2>Products</h2>
     @if(productList.isEmpty) {

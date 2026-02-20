@@ -53,9 +53,27 @@ def validateCoupon(coupon: Coupon): Either[String, Coupon] =
             </div>
             <div class="form-group">
                 <button type="submit" class="btn-blue">Validate</button>
+                <button type="button" class="btn-autofill btn-sm" onclick="autoFillCoupon()">Auto Fill</button>
             </div>
         </div>
     }
+
+    <script>
+    function autoFillCoupon() {
+        var scenarios = [
+            { code: 'SAVE10', total: 75.00 },
+            { code: 'EXPIRED22', total: 50.00 },
+            { code: 'USED_UP', total: 100.00 },
+            { code: 'BIGSPEND', total: 120.00 },
+            { code: 'WELCOME', total: 49.99 },
+            { code: 'NOTREAL', total: 80.00 },
+            { code: '', total: 60.00 }
+        ];
+        var s = scenarios[Math.floor(Math.random() * scenarios.length)];
+        document.getElementById('code').value = s.code;
+        document.getElementById('orderTotal').value = s.total;
+    }
+    </script>
 
     @result.map { res =>
         <h2>Validation Pipeline Results</h2>

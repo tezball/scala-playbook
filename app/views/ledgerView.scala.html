@@ -58,9 +58,32 @@ def summaryByType(entries: Seq[LedgerEntry]): Map[String, Double] =
             </div>
             <div class="form-group">
                 <button type="submit" class="btn-blue">Add Entry</button>
+                <button type="button" class="btn-autofill btn-sm" onclick="autoFillLedger()">Auto Fill</button>
             </div>
         </div>
     }
+
+    <script>
+    function autoFillLedger() {
+        var entries = [
+            { account: 'Main Account', type: 'Credit', amount: 5000.00, desc: 'Monthly salary deposit - January 2025' },
+            { account: 'Main Account', type: 'Debit', amount: 1250.00, desc: 'Rent payment - apartment lease' },
+            { account: 'Main Account', type: 'Debit', amount: 89.99, desc: 'Electric utility bill - ConEd' },
+            { account: 'Main Account', type: 'Fee', amount: 12.50, desc: 'Monthly account maintenance fee' },
+            { account: 'Savings Account', type: 'Credit', amount: 1000.00, desc: 'Transfer from checking - emergency fund' },
+            { account: 'Main Account', type: 'Refund', amount: 149.99, desc: 'Amazon return - defective headphones' },
+            { account: 'Business Account', type: 'Credit', amount: 3200.00, desc: 'Client invoice payment - Project Alpha' },
+            { account: 'Business Account', type: 'Debit', amount: 450.00, desc: 'Software license renewal - JetBrains' },
+            { account: 'Business Account', type: 'Fee', amount: 29.99, desc: 'Payment processing fee - Stripe' },
+            { account: 'Savings Account', type: 'Credit', amount: 250.00, desc: 'Interest payment - Q4 2024' }
+        ];
+        var e = entries[Math.floor(Math.random() * entries.length)];
+        document.getElementById('accountName').value = e.account;
+        document.getElementById('txType').value = e.type;
+        document.getElementById('amount').value = e.amount;
+        document.getElementById('description').value = e.desc;
+    }
+    </script>
 
     @if(accounts.nonEmpty) {
         <h2>Filter by Account</h2>

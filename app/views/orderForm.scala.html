@@ -51,8 +51,30 @@ for record &lt;- records.asScala do
             }
         </div>
 
-        <button type="submit" class="btn-blue">Place Order</button>
+        <div class="btn-group">
+            <button type="submit" class="btn-blue">Place Order</button>
+            <button type="button" class="btn-autofill" onclick="autoFillOrder()">Auto Fill</button>
+        </div>
     }
+
+    <script>
+    function autoFillOrder() {
+        var orders = [
+            { user: 'Alice Johnson', item: 'MacBook Pro 16"', qty: 1 },
+            { user: 'Bob Martinez', item: 'Wireless Mouse', qty: 3 },
+            { user: 'Carol Chen', item: 'Standing Desk', qty: 1 },
+            { user: 'David Kim', item: 'Mechanical Keyboard', qty: 2 },
+            { user: 'Eva Rossi', item: 'Noise-Cancelling Headphones', qty: 1 },
+            { user: 'Frank Okafor', item: 'USB-C Hub', qty: 4 },
+            { user: 'Grace Liu', item: '27" 4K Monitor', qty: 2 },
+            { user: 'Henry Park', item: 'Ergonomic Chair', qty: 1 }
+        ];
+        var o = orders[Math.floor(Math.random() * orders.length)];
+        document.getElementById('userName').value = o.user;
+        document.getElementById('itemName').value = o.item;
+        document.getElementById('quantity').value = o.qty;
+    }
+    </script>
 
     <h2>Orders</h2>
     @if(orderList.isEmpty) {

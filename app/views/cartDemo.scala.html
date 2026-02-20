@@ -55,9 +55,30 @@ items.collect { case i if i.unitPrice * i.quantity &gt; 50 =&gt; i.name }</code>
             </div>
             <div class="form-group">
                 <button type="submit">Add</button>
+                <button type="button" class="btn-autofill btn-sm" onclick="autoFillCart()">Auto Fill</button>
             </div>
         </div>
     }
+
+    <script>
+    function autoFillCart() {
+        var items = [
+            { name: 'Bluetooth Speaker', cat: 'Electronics', price: 59.99, qty: 1 },
+            { name: 'HDMI Cable 6ft', cat: 'Electronics', price: 14.99, qty: 2 },
+            { name: 'Design Patterns', cat: 'Books', price: 42.00, qty: 1 },
+            { name: 'Winter Jacket', cat: 'Clothing', price: 129.99, qty: 1 },
+            { name: 'Almond Butter', cat: 'Food', price: 11.49, qty: 3 },
+            { name: 'Resistance Bands Set', cat: 'Sports', price: 24.99, qty: 2 },
+            { name: 'Mechanical Keyboard', cat: 'Electronics', price: 89.00, qty: 1 },
+            { name: 'Trail Mix 1lb', cat: 'Food', price: 7.99, qty: 4 }
+        ];
+        var i = items[Math.floor(Math.random() * items.length)];
+        document.getElementById('name').value = i.name;
+        document.getElementById('category').value = i.cat;
+        document.getElementById('unitPrice').value = i.price;
+        document.getElementById('quantity').value = i.qty;
+    }
+    </script>
 
     <h2>Cart Items (<code>map</code> &mdash; line totals)</h2>
     <table>

@@ -50,9 +50,26 @@ def nextActions(status: OrderStatus): List[String] = status match
             </div>
             <div class="form-group">
                 <button type="submit">Create Order</button>
+                <button type="button" class="btn-autofill btn-sm" onclick="autoFillWorkflow()">Auto Fill</button>
             </div>
         </div>
     }
+
+    <script>
+    function autoFillWorkflow() {
+        var items = [
+            'Laptop Stand - Adjustable Aluminum',
+            'Webcam HD 1080p with Ring Light',
+            'Desk Organizer - Bamboo 5-Slot',
+            'Monitor Arm - Dual Mount',
+            'Cable Management Kit (20 pieces)',
+            'Whiteboard 36x24 - Magnetic',
+            'Footrest - Ergonomic Adjustable',
+            'Desk Lamp - LED with USB Charging'
+        ];
+        document.getElementById('description').value = items[Math.floor(Math.random() * items.length)];
+    }
+    </script>
 
     <h2>Orders</h2>
     @if(orders.isEmpty) {

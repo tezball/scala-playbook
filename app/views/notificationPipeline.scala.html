@@ -50,8 +50,28 @@ val formatForSms = formatForChannel(160)("[SMS]")</code></pre>
             <textarea id="message" name="message" rows="3" required>@form("message").value.getOrElse("")</textarea>
         </div>
 
-        <button type="submit" class="btn-blue">Process Notification</button>
+        <div class="btn-group">
+            <button type="submit" class="btn-blue">Process Notification</button>
+            <button type="button" class="btn-autofill" onclick="autoFillNotification()">Auto Fill</button>
+        </div>
     }
+
+    <script>
+    function autoFillNotification() {
+        var notifications = [
+            { ch: 'email', to: 'alice.johnson@@example.com', msg: 'Your order <b>#1042</b> has shipped! <a href="#">Track it here</a>. Expected delivery: 3-5 business days.' },
+            { ch: 'sms', to: '+1-555-0101', msg: 'Hi Alice, your prescription is ready for pickup at Walgreens on Main St. Reply STOP to unsubscribe.' },
+            { ch: 'push', to: 'bob.martinez', msg: 'Flash sale! <strong>50% off</strong> all electronics for the next 2 hours. <script>alert("deal")</script> Shop now!' },
+            { ch: 'email', to: 'carol.chen@@techcorp.io', msg: 'Your return for Order #987 has been processed. A refund of $49.99 will appear on your statement within 5-7 business days. Thank you for shopping with us and we hope to see you again soon!' },
+            { ch: 'sms', to: '+44-20-7946-0958', msg: 'Delivery update: Your package is <em>out for delivery</em> and will arrive by 5pm today.' },
+            { ch: 'push', to: 'david.kim', msg: 'Price drop alert! The <b>Wireless Headphones</b> in your wishlist just dropped from $349 to $279.' }
+        ];
+        var n = notifications[Math.floor(Math.random() * notifications.length)];
+        document.getElementById('channel').value = n.ch;
+        document.getElementById('recipient').value = n.to;
+        document.getElementById('message').value = n.msg;
+    }
+    </script>
 
     @result.map { case (steps, routed) =>
         <h2>Pipeline Steps</h2>

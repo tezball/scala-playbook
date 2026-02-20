@@ -64,8 +64,31 @@ def display[A](items: Seq[A])(using s: Show[A]): Seq[String] =
             <textarea id="comment" name="comment" rows="2" required>@form("comment").value.getOrElse("")</textarea>
         </div>
 
-        <button type="submit" class="btn-orange">Submit Review</button>
+        <div class="btn-group">
+            <button type="submit" class="btn-orange">Submit Review</button>
+            <button type="button" class="btn-autofill" onclick="autoFillReview()">Auto Fill</button>
+        </div>
     }
+
+    <script>
+    function autoFillReview() {
+        var reviews = [
+            { product: 'MacBook Pro 16"', author: 'Alice Johnson', rating: 5, comment: 'Incredible performance for software development. The M3 chip handles sbt compilation like a breeze.' },
+            { product: 'Wireless Mouse', author: 'Bob Martinez', rating: 3, comment: 'Decent mouse but the scroll wheel started squeaking after a month. Battery life is good though.' },
+            { product: 'Standing Desk', author: 'Carol Chen', rating: 4, comment: 'Sturdy build quality and smooth height adjustment. Cable management could be better.' },
+            { product: 'Noise-Cancelling Headphones', author: 'David Kim', rating: 5, comment: 'Best headphones I have ever owned. The noise cancellation is perfect for open offices.' },
+            { product: 'Ergonomic Chair', author: 'Eva Rossi', rating: 2, comment: 'Lumbar support is uncomfortable and the armrests wobble. Not worth the premium price.' },
+            { product: 'Mechanical Keyboard', author: 'Frank Okafor', rating: 4, comment: 'Great tactile feedback with Cherry MX Browns. A bit loud for shared workspaces.' },
+            { product: 'USB-C Hub', author: 'Grace Liu', rating: 1, comment: 'Stopped working after two weeks. The HDMI port never detected my external monitor reliably.' },
+            { product: '27" 4K Monitor', author: 'Henry Park', rating: 5, comment: 'Crystal clear text rendering makes code so much easier to read. Colors are accurate out of the box.' }
+        ];
+        var r = reviews[Math.floor(Math.random() * reviews.length)];
+        document.getElementById('productName').value = r.product;
+        document.getElementById('author').value = r.author;
+        document.getElementById('rating').value = r.rating;
+        document.getElementById('comment').value = r.comment;
+    }
+    </script>
 
     <h2>Reviews (sorted by <code>given Ordering</code>)</h2>
     <p>
